@@ -1,0 +1,164 @@
+{
+  "contractors": [
+    {
+      "id": "fidel-carpenter",
+      "name": "Fidel Espinal",
+      "trade": "Carpentry",
+      "phone": "404-246-7062",
+      "email": null,
+      "company": "Espinal Carpentry Crew",
+      "crew": ["Carlos", "Cruz", "Francisco"],
+      "calendar": "Fidel-Carpenter",
+      "responsibilities": [
+        "Demolition",
+        "Framing",
+        "Insulation",
+        "Trim & Millwork"
+      ],
+      "notes": "Primary carpenter crew; high-frequency contact; handles most structural work"
+    },
+    {
+      "id": "jose-painter",
+      "name": "Jose Montdragon",
+      "trade": "Painting",
+      "phone": "470-538-6540",
+      "email": null,
+      "company": null,
+      "crew": [],
+      "calendar": "Jose-Painter",
+      "responsibilities": ["Paint"],
+      "notes": "Quality finish work; critical for final appearance"
+    },
+    {
+      "id": "hector-plumbing",
+      "name": "Hector Gonzales",
+      "trade": "Plumbing & HVAC",
+      "phone": "770-329-7139",
+      "email": null,
+      "company": "G & P Plumbing and HVAC",
+      "crew": [],
+      "calendar": "Hector-Plumbing/HVAC",
+      "responsibilities": [
+        "Plumbing Rough",
+        "HVAC",
+        "Plumbing Final"
+      ],
+      "notes": "Handles both plumbing and HVAC; coordinates water and air systems"
+    },
+    {
+      "id": "axel-electric",
+      "name": "Axel Sorzano",
+      "trade": "Electrical",
+      "phone": "678-923-4838",
+      "email": null,
+      "company": "Amen Electric",
+      "crew": ["Edwin Sorzano"],
+      "calendar": "Axel-Electric",
+      "responsibilities": [
+        "Electrical Rough",
+        "Electrical Final"
+      ],
+      "notes": "Two-phase electrical work; rough-in early, finals after other trades"
+    },
+    {
+      "id": "andres-tile",
+      "name": "Andres",
+      "trade": "Tile",
+      "phone": "770-617-6042",
+      "email": null,
+      "company": null,
+      "crew": [],
+      "calendar": "Andres-Tile",
+      "responsibilities": ["Tile Work (Backsplash)"],
+      "notes": "Specializes in backsplash and tile finishes; late-phase work"
+    },
+    {
+      "id": "jorge-drywall",
+      "name": "Jorge",
+      "trade": "Drywall Finishing",
+      "phone": "678-630-1512",
+      "email": null,
+      "company": null,
+      "crew": [],
+      "calendar": "Jorge-Drywall",
+      "responsibilities": ["Drywall"],
+      "notes": "Quality gatekeeper; surface preparation affects paint quality significantly"
+    },
+    {
+      "id": "luciano-flooring",
+      "name": "Luciano Martinez",
+      "trade": "Flooring",
+      "phone": "678-895-7094",
+      "email": null,
+      "company": "Fast Flooring & Carpeting",
+      "crew": [],
+      "calendar": "Luciano-Flooring",
+      "responsibilities": ["Flooring"],
+      "notes": "Late-phase work; must follow paint completion"
+    },
+    {
+      "id": "teresa-design",
+      "name": "Teresa Hamilton",
+      "trade": "Design",
+      "phone": null,
+      "email": null,
+      "company": "TLHD",
+      "crew": [],
+      "calendar": null,
+      "responsibilities": [
+        "Customer decision consultation",
+        "Design specifications",
+        "Material selection guidance"
+      ],
+      "notes": "Coordinates with customers on aesthetic choices and design decisions"
+    },
+    {
+      "id": "daniel-cabinets",
+      "name": "Daniel Wheeler",
+      "trade": "Cabinets",
+      "phone": null,
+      "email": null,
+      "company": "Wheeler Woodworks",
+      "crew": [],
+      "calendar": null,
+      "responsibilities": [
+        "Cabinets",
+        "Custom millwork"
+      ],
+      "notes": "Longest lead time (6-8 weeks); must order early; handles custom cabinetry"
+    },
+    {
+      "id": "carolyn-office",
+      "name": "Carolyn Perry",
+      "trade": "Office/Bookkeeping",
+      "phone": "470-617-3820",
+      "email": null,
+      "company": "HP Home Improvements",
+      "crew": [],
+      "calendar": "Carolyn-Office",
+      "responsibilities": [
+        "Bookkeeping",
+        "Invoice management",
+        "Office coordination"
+      ],
+      "notes": "In-house staff; handles financial side of projects"
+    },
+    {
+      "id": "nick-pm",
+      "name": "Nick Stipetich",
+      "trade": "Project Management",
+      "phone": "470-617-3810",
+      "email": null,
+      "company": "HP Home Improvements",
+      "crew": [],
+      "calendar": "Nick-Project Manager",
+      "responsibilities": [
+        "Project management",
+        "Supply procurement",
+        "Schedule coordination",
+        "Punch Out & Cleanup oversight"
+      ],
+      "notes": "In-house PM; coordinates all trades; handles scheduling and materials"
+    }
+  ]
+}

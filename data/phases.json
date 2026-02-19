@@ -1,0 +1,257 @@
+{
+  "phases": [
+    {
+      "id": 1,
+      "name": "Demolition",
+      "description": "Remove existing materials, fixtures, cabinets",
+      "assignedTo": "Fidel-Carpenter",
+      "startDay": 1,
+      "durationDays": 2,
+      "materialsNeeded": [
+        "Demo tools",
+        "Dump trailer",
+        "Safety equipment"
+      ],
+      "criticalPath": true
+    },
+    {
+      "id": 2,
+      "name": "Framing",
+      "description": "Frame walls, openings, structural adjustments",
+      "assignedTo": "Fidel-Carpenter",
+      "startDay": 3,
+      "durationDays": 12,
+      "materialsNeeded": [
+        "Lumber (framing)",
+        "Fasteners",
+        "Brackets"
+      ],
+      "criticalPath": true
+    },
+    {
+      "id": 3,
+      "name": "Electrical Rough",
+      "description": "Run electrical wire, boxes, panel work",
+      "assignedTo": "Axel-Electric",
+      "startDay": 15,
+      "durationDays": 3,
+      "materialsNeeded": [
+        "Electrical Plans",
+        "Wire",
+        "Boxes",
+        "Panel materials"
+      ],
+      "dependsOn": [2],
+      "requiresCustomerDecision": "Electrical Fixtures"
+    },
+    {
+      "id": 4,
+      "name": "Plumbing Rough",
+      "description": "Run water/drain lines, fixture rough-in",
+      "assignedTo": "Hector-Plumbing",
+      "startDay": 18,
+      "durationDays": 4,
+      "materialsNeeded": [
+        "Plumbing Plans",
+        "Rough in Shower valves",
+        "Water/drain lines",
+        "Fittings"
+      ],
+      "dependsOn": [2],
+      "requiresCustomerDecision": "Plumbing Fixtures"
+    },
+    {
+      "id": 5,
+      "name": "HVAC",
+      "description": "Install ductwork, vents, system rough-in",
+      "assignedTo": "Hector-HVAC",
+      "startDay": 22,
+      "durationDays": 3,
+      "materialsNeeded": [
+        "HVAC ductwork",
+        "Vents",
+        "Registers",
+        "Insulation wrap"
+      ],
+      "dependsOn": [4]
+    },
+    {
+      "id": 6,
+      "name": "Insulation",
+      "description": "Install wall/ceiling insulation",
+      "assignedTo": "Fidel-Carpenter",
+      "startDay": 25,
+      "durationDays": 1,
+      "materialsNeeded": [
+        "Insulation batts/rolls",
+        "Vapor barrier"
+      ],
+      "dependsOn": [3, 4, 5]
+    },
+    {
+      "id": 7,
+      "name": "Drywall",
+      "description": "Hang and finish drywall",
+      "assignedTo": "Jorge-Drywall",
+      "startDay": 26,
+      "durationDays": 6,
+      "materialsNeeded": [
+        "Drywall sheets (TBD qty)",
+        "Joint compound",
+        "Tape",
+        "Fasteners"
+      ],
+      "dependsOn": [6],
+      "criticalPath": true,
+      "qualityCheckpoint": true
+    },
+    {
+      "id": 8,
+      "name": "Trim & Millwork",
+      "description": "Install baseboards, crown, door frames",
+      "assignedTo": "Fidel-Carpenter",
+      "startDay": 32,
+      "durationDays": 2,
+      "materialsNeeded": [
+        "Trim lumber",
+        "Baseboards",
+        "Crown molding",
+        "Door frames",
+        "Fasteners"
+      ],
+      "dependsOn": [7],
+      "requiresCustomerDecision": "Trim Selection"
+    },
+    {
+      "id": 9,
+      "name": "Paint",
+      "description": "Prime and paint walls, ceilings, trim",
+      "assignedTo": "Jose-Painter",
+      "startDay": 34,
+      "durationDays": 8,
+      "materialsNeeded": [
+        "Primer",
+        "Paint (walls/ceilings/trim)",
+        "Brushes",
+        "Rollers",
+        "Drop cloths"
+      ],
+      "dependsOn": [8],
+      "requiresCustomerDecision": "Paint Colors",
+      "criticalPath": true,
+      "qualityCheckpoint": true
+    },
+    {
+      "id": 10,
+      "name": "Flooring",
+      "description": "Install tile, wood, vinyl flooring",
+      "assignedTo": "Luciano-Flooring",
+      "startDay": 42,
+      "durationDays": 2,
+      "materialsNeeded": [
+        "Tile/wood/vinyl flooring",
+        "Adhesive",
+        "Grout",
+        "Underlayment"
+      ],
+      "dependsOn": [9],
+      "requiresCustomerDecision": "Tile Selections",
+      "criticalPath": true
+    },
+    {
+      "id": 11,
+      "name": "Tile Work (Backsplash)",
+      "description": "Install backsplash, specialty tile",
+      "assignedTo": "Andres-Tile",
+      "startDay": 45,
+      "durationDays": 4,
+      "materialsNeeded": [
+        "Backsplash tile",
+        "Grout",
+        "Adhesive",
+        "Spacers",
+        "Sealer"
+      ],
+      "dependsOn": [12, 13],
+      "requiresCustomerDecision": "Tile Selections"
+    },
+    {
+      "id": 12,
+      "name": "Cabinets",
+      "description": "Install kitchen/bathroom cabinets",
+      "assignedTo": "Daniel Wheeler",
+      "startDay": 45,
+      "durationDays": 3,
+      "materialsNeeded": [
+        "Kitchen/bathroom cabinets",
+        "Hardware"
+      ],
+      "dependsOn": [10],
+      "requiresCustomerDecision": "Cabinets"
+    },
+    {
+      "id": 13,
+      "name": "Countertops",
+      "description": "Install countertops (quartz, granite, etc.)",
+      "assignedTo": "Specialty Contractor",
+      "startDay": 48,
+      "durationDays": 3,
+      "materialsNeeded": [
+        "Countertop material (quartz/granite)",
+        "Adhesive",
+        "Edging",
+        "Fasteners"
+      ],
+      "dependsOn": [12],
+      "requiresCustomerDecision": "Countertops"
+    },
+    {
+      "id": 14,
+      "name": "Plumbing Final",
+      "description": "Install fixtures (sink, faucet, etc.)",
+      "assignedTo": "Hector-Plumbing",
+      "startDay": 51,
+      "durationDays": 1,
+      "materialsNeeded": [
+        "Sink",
+        "Faucet",
+        "Drain fixtures",
+        "Shutoff valves",
+        "Supply lines"
+      ],
+      "dependsOn": [13]
+    },
+    {
+      "id": 15,
+      "name": "Electrical Final",
+      "description": "Install outlets, switches, fixtures, connect panels",
+      "assignedTo": "Axel-Electric",
+      "startDay": 52,
+      "durationDays": 1,
+      "materialsNeeded": [
+        "Outlets",
+        "Switches",
+        "Fixtures",
+        "Wire",
+        "Breaker panels",
+        "Covers"
+      ],
+      "dependsOn": [14]
+    },
+    {
+      "id": 16,
+      "name": "Punch Out & Cleanup",
+      "description": "Final inspections, touch-ups, cleanup",
+      "assignedTo": "Nick-Project Manager",
+      "startDay": 53,
+      "durationDays": 1,
+      "materialsNeeded": [
+        "Cleaning supplies",
+        "Touch-up paint",
+        "Final inspection checklist"
+      ],
+      "dependsOn": [15],
+      "finalCheckpoint": true
+    }
+  ]
+}
