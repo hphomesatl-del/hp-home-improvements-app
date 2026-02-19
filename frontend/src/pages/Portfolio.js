@@ -74,7 +74,7 @@ function Portfolio() {
   return (
     <div className="portfolio">
       <div className="portfolio-header">
-        <h1>Before & After Gallery</h1>
+        <h1>Select Remodel</h1>
         <p>See our completed projects from HP Home Improvements</p>
       </div>
 
