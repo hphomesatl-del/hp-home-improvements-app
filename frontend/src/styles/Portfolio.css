@@ -18,6 +18,13 @@
   color: #666;
 }
 
+.portfolio-header .photo-count {
+  font-size: 1rem;
+  color: #007bff;
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
