@@ -54,7 +54,28 @@ hp-home-improvements-app/
 
 ## Quick Start
 
-*Coming soon* — Initial setup and development environment instructions
+**See [SETUP.md](SETUP.md) for complete setup instructions.**
+
+### 5-Minute Setup
+
+```bash
+# 1. Create database
+createdb hp_home_improvements
+psql hp_home_improvements < backend/db/schema.sql
+
+# 2. Start backend (terminal 1)
+cd backend
+npm install
+npm run dev
+
+# 3. Start frontend (terminal 2)
+cd frontend
+npm install
+npm start
+```
+
+**Frontend:** http://localhost:3000
+**Backend API:** http://localhost:5000
 
 ## Technologies
 
