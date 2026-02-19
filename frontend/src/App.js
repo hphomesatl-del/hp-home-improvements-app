@@ -6,8 +6,8 @@ import './App.css';
 import Dashboard from './pages/Dashboard';
 import ProjectDetail from './pages/ProjectDetail';
 import NewProject from './pages/NewProject';
-import ContractorList from './pages/ContractorList';
 import Portfolio from './pages/Portfolio';
+import TeamMembers from './pages/TeamMembers';
 
 function App() {
   const [projects, setProjects] = useState([]);
@@ -39,7 +39,7 @@ function App() {
               <Link to="/">Dashboard</Link>
               <Link to="/portfolio">Portfolio</Link>
               <Link to="/projects/new">New Project</Link>
-              <Link to="/contractors">Contractors</Link>
+              <Link to="/team">Team Members</Link>
             </nav>
           </div>
         </header>
@@ -50,7 +50,7 @@ function App() {
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/projects/new" element={<NewProject />} />
-            <Route path="/contractors" element={<ContractorList />} />
+            <Route path="/team" element={<TeamMembers />} />
           </Routes>
         </main>
 
