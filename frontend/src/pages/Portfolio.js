@@ -1,57 +1,94 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Portfolio.css';
 
 function Portfolio() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [kitchenPhotos, setKitchenPhotos] = useState([]);
+  const [deckPhotos, setDeckPhotos] = useState([]);
 
-  // Just use simple absolute paths - React will serve from public folder
-  const photos = [
-    { id: 1, src: '/sample-photos/kitchen_1.jpg' },
-    { id: 2, src: '/sample-photos/kitchen_2.jpg' },
-    { id: 3, src: '/sample-photos/kitchen_3.jpg' },
-    { id: 4, src: '/sample-photos/kitchen_4.jpg' },
-    { id: 5, src: '/sample-photos/kitchen_5.jpg' },
-    { id: 6, src: '/sample-photos/kitchen_6.jpg' },
-    { id: 7, src: '/sample-photos/kitchen_7.jpg' },
-    { id: 8, src: '/sample-photos/kitchen_8.jpg' },
-    { id: 9, src: '/sample-photos/kitchen_9.jpg' },
-    { id: 10, src: '/sample-photos/kitchen_10.jpg' },
-    { id: 11, src: '/sample-photos/kitchen_11.jpg' },
-    { id: 12, src: '/sample-photos/kitchen_12.jpg' },
-    { id: 13, src: '/sample-photos/kitchen_13.jpg' },
-    { id: 14, src: '/sample-photos/kitchen_14.jpg' },
-    { id: 15, src: '/sample-photos/kitchen_15.jpg' },
-    { id: 16, src: '/sample-photos/kitchen_16.jpg' },
-    { id: 17, src: '/sample-photos/kitchen_17.jpg' },
-    { id: 18, src: '/sample-photos/kitchen_18.jpg' },
-    { id: 19, src: '/sample-photos/kitchen_19.jpg' },
-    { id: 20, src: '/sample-photos/kitchen_20.jpg' },
-  ];
+  useEffect(() => {
+    // Load kitchen photos
+    const kitchens = Array.from({ length: 20 }, (_, i) => ({
+      id: i + 1,
+      src: `/sample-photos/kitchen_${i + 1}.jpg`,
+      type: 'kitchen'
+    }));
+    setKitchenPhotos(kitchens);
+
+    // Load deck photos (if they exist)
+    const decks = Array.from({ length: 20 }, (_, i) => ({
+      id: i + 1,
+      src: `/sample-photos/deck_${i + 1}.jpg`,
+      type: 'deck'
+    }));
+    setDeckPhotos(decks);
+  }, []);
+
+  // Shuffle array for random rotation
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  const renderGallerySection = (photos, title, description) => {
+    if (photos.length === 0) return null;
+
+    // Shuffle and display up to 20 photos
+    const displayPhotos = shuffleArray(photos).slice(0, 20);
+
+    return (
+      <div key={title} className="gallery-section">
+        <div className="section-header">
+          <h2>{title}</h2>
+          <p className="section-description">{description}</p>
+          <p className="photo-count">📸 {displayPhotos.length} photos from Google Drive</p>
+        </div>
+
+        <div className="gallery-grid">
+          {displayPhotos.map((photo) => (
+            <div 
+              key={`${photo.type}-${photo.id}`}
+              className="gallery-item"
+              onClick={() => setSelectedPhoto(photo)}
+            >
+              <img 
+                src={photo.src} 
+                alt={`${title} ${photo.id}`}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+              <p className="photo-caption">{title} {photo.id}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="portfolio">
       <div className="portfolio-header">
         <h1>Before & After Gallery</h1>
-        <p>See our completed kitchen renovation projects</p>
-        <p className="photo-count">📸 {photos.length} photos</p>
+        <p>See our completed projects from HP Home Improvements</p>
       </div>
 
-      <div className="gallery-grid">
-        {photos.map((photo) => (
-          <div 
-            key={photo.id} 
-            className="gallery-item"
-            onClick={() => setSelectedPhoto(photo)}
-          >
-            <img 
-              src={photo.src} 
-              alt={`Kitchen renovation ${photo.id}`}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-            <p className="photo-caption">Kitchen Renovation {photo.id}</p>
-          </div>
-        ))}
-      </div>
+      {renderGallerySection(
+        kitchenPhotos,
+        'Kitchens',
+        'Beautiful kitchen renovations and remodels. Photos sourced directly from Google Drive.'
+      )}
+
+      {renderGallerySection(
+        deckPhotos,
+        'Decks',
+        'Custom deck builds and outdoor improvements. Photos sourced directly from Google Drive.'
+      )}
 
       {selectedPhoto && (
         <div className="photo-modal" onClick={() => setSelectedPhoto(null)}>
@@ -62,8 +99,8 @@ function Portfolio() {
             >
               ✕
             </button>
-            <img src={selectedPhoto.src} alt={`Kitchen renovation ${selectedPhoto.id}`} />
-            <p>Kitchen Renovation {selectedPhoto.id}</p>
+            <img src={selectedPhoto.src} alt={`${selectedPhoto.type} ${selectedPhoto.id}`} />
+            <p>{selectedPhoto.type.charAt(0).toUpperCase() + selectedPhoto.type.slice(1)} Project {selectedPhoto.id}</p>
           </div>
         </div>
       )}
