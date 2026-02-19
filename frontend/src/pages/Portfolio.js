@@ -1,74 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import '../styles/Portfolio.css';
 
 function Portfolio() {
-  const [photos, setPhotos] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Dynamically load photos from the public/sample-photos folder
-    loadPhotos();
-  }, []);
-
-  const loadPhotos = async () => {
-    try {
-      // These are the actual downloaded photos
-      const photoFiles = [
-        'kitchen_1', 'kitchen_2', 'kitchen_3', 'kitchen_4', 'kitchen_5',
-        'kitchen_6', 'kitchen_7', 'kitchen_8', 'kitchen_9', 'kitchen_10',
-        'kitchen_11', 'kitchen_12', 'kitchen_13', 'kitchen_14', 'kitchen_15',
-        'kitchen_16', 'kitchen_17', 'kitchen_18', 'kitchen_19', 'kitchen_20'
-      ];
-
-      const photos = photoFiles.map((file, index) => ({
-        id: index + 1,
-        src: `/sample-photos/${file}.jpg`,
-        caption: `Kitchen Project ${index + 1}`,
-        alt: `Kitchen renovation photo ${index + 1}`
-      }));
-
-      setPhotos(photos);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error loading photos:', error);
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return <div className="loading">Loading portfolio...</div>;
-  }
+  // Just use simple absolute paths - React will serve from public folder
+  const photos = [
+    { id: 1, src: '/sample-photos/kitchen_1.jpg' },
+    { id: 2, src: '/sample-photos/kitchen_2.jpg' },
+    { id: 3, src: '/sample-photos/kitchen_3.jpg' },
+    { id: 4, src: '/sample-photos/kitchen_4.jpg' },
+    { id: 5, src: '/sample-photos/kitchen_5.jpg' },
+    { id: 6, src: '/sample-photos/kitchen_6.jpg' },
+    { id: 7, src: '/sample-photos/kitchen_7.jpg' },
+    { id: 8, src: '/sample-photos/kitchen_8.jpg' },
+    { id: 9, src: '/sample-photos/kitchen_9.jpg' },
+    { id: 10, src: '/sample-photos/kitchen_10.jpg' },
+    { id: 11, src: '/sample-photos/kitchen_11.jpg' },
+    { id: 12, src: '/sample-photos/kitchen_12.jpg' },
+    { id: 13, src: '/sample-photos/kitchen_13.jpg' },
+    { id: 14, src: '/sample-photos/kitchen_14.jpg' },
+    { id: 15, src: '/sample-photos/kitchen_15.jpg' },
+    { id: 16, src: '/sample-photos/kitchen_16.jpg' },
+    { id: 17, src: '/sample-photos/kitchen_17.jpg' },
+    { id: 18, src: '/sample-photos/kitchen_18.jpg' },
+    { id: 19, src: '/sample-photos/kitchen_19.jpg' },
+    { id: 20, src: '/sample-photos/kitchen_20.jpg' },
+  ];
 
   return (
     <div className="portfolio">
       <div className="portfolio-header">
         <h1>Before & After Gallery</h1>
         <p>See our completed kitchen renovation projects</p>
-        {photos.length > 0 && (
-          <p className="photo-count">📸 {photos.length} photos</p>
-        )}
+        <p className="photo-count">📸 {photos.length} photos</p>
       </div>
 
-      {photos.length === 0 ? (
-        <div className="empty-gallery">
-          <h2>Gallery Coming Soon</h2>
-          <p>No photos available yet</p>
-        </div>
-      ) : (
-        <div className="gallery-grid">
-          {photos.map((photo) => (
-            <div 
-              key={photo.id} 
-              className="gallery-item"
-              onClick={() => setSelectedPhoto(photo)}
-            >
-              <img src={photo.src} alt={photo.alt} />
-              <p className="photo-caption">{photo.caption}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="gallery-grid">
+        {photos.map((photo) => (
+          <div 
+            key={photo.id} 
+            className="gallery-item"
+            onClick={() => setSelectedPhoto(photo)}
+          >
+            <img 
+              src={photo.src} 
+              alt={`Kitchen renovation ${photo.id}`}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+            <p className="photo-caption">Kitchen Renovation {photo.id}</p>
+          </div>
+        ))}
+      </div>
 
       {selectedPhoto && (
         <div className="photo-modal" onClick={() => setSelectedPhoto(null)}>
@@ -79,8 +62,8 @@ function Portfolio() {
             >
               ✕
             </button>
-            <img src={selectedPhoto.src} alt={selectedPhoto.alt} />
-            <p>{selectedPhoto.caption}</p>
+            <img src={selectedPhoto.src} alt={`Kitchen renovation ${selectedPhoto.id}`} />
+            <p>Kitchen Renovation {selectedPhoto.id}</p>
           </div>
         </div>
       )}
