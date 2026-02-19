@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import ProjectDetail from './pages/ProjectDetail';
 import NewProject from './pages/NewProject';
 import ContractorList from './pages/ContractorList';
+import Portfolio from './pages/Portfolio';
 
 function App() {
   const [projects, setProjects] = useState([]);
@@ -36,6 +37,7 @@ function App() {
             </Link>
             <nav className="nav">
               <Link to="/">Dashboard</Link>
+              <Link to="/portfolio">Portfolio</Link>
               <Link to="/projects/new">New Project</Link>
               <Link to="/contractors">Contractors</Link>
             </nav>
@@ -45,6 +47,7 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Dashboard projects={projects} loading={loading} />} />
+            <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/projects/new" element={<NewProject />} />
             <Route path="/contractors" element={<ContractorList />} />

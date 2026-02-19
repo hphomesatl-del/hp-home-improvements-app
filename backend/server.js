@@ -24,12 +24,15 @@ pool.on('error', (err) => {
   console.error('Unexpected error on idle client', err);
 });
 
+// Make pool available to routes
+app.locals.pool = pool;
+
 // Routes
-app.use('/api/projects', require('./routes/projects'));
-app.use('/api/phases', require('./routes/phases'));
-app.use('/api/decisions', require('./routes/decisions'));
-app.use('/api/contractors', require('./routes/contractors'));
-app.use('/api/auth', require('./routes/auth'));
+app.use('/api/projects', require('./routes/projects')(pool));
+app.use('/api/phases', require('./routes/phases')(pool));
+app.use('/api/decisions', require('./routes/decisions')(pool));
+app.use('/api/contractors', require('./routes/contractors')(pool));
+app.use('/api/auth', require('./routes/auth')(pool));
 
 // Health check
 app.get('/health', (req, res) => {
