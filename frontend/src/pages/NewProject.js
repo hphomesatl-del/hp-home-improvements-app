@@ -28,7 +28,7 @@ function NewProject() {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:5000/api/projects', {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';\n      const response = await fetch(`${apiUrl}/api/projects`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

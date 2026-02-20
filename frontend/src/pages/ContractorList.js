@@ -6,7 +6,7 @@ function ContractorList() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/contractors')
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';\n    fetch(`${apiUrl}/api/contractors`)
       .then(res => res.json())
       .then(data => {
         setContractors(data);
