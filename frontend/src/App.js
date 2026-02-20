@@ -16,7 +16,7 @@ function App() {
 
   useEffect(() => {
     // Fetch projects from API
-    fetch('http://localhost:5000/api/projects')
+    fetch(process.env.REACT_APP_API_URL || 'https://api.hp-home-improvements.up.railway.app/api/projects')
       .then(res => res.json())
       .then(data => {
         setProjects(data);
