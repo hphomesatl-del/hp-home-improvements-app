@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
 const { Pool } = require('pg');
 
 const app = express();
@@ -34,6 +35,10 @@ app.use('/api/decisions', require('./routes/decisions')(pool));
 app.use('/api/contractors', require('./routes/contractors')(pool));
 app.use('/api/auth', require('./routes/auth')(pool));
 app.use('/api/inspirations', require('./routes/inspirations')(pool));
+app.use('/api/projects', require('./routes/plans')(pool));
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check
 app.get('/health', (req, res) => {
