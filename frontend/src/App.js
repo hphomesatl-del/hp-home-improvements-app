@@ -31,6 +31,9 @@ function App() {
     <Router>
       <div className="app">
         <header className="header">
+          <div className="header-top">
+            <span className="phone-number">📞 (404) 931-3686</span>
+          </div>
           <div className="header-content">
             <Link to="/" className="logo">
               <img src="/logo.jpg" alt="HP Home Improvements" className="logo-image" />

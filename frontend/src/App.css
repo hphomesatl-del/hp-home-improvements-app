@@ -8,8 +8,20 @@
 .header {
   background-color: #1a1a1a;
   color: white;
-  padding: 1rem 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-top {
+  background-color: #0d0d0d;
+  padding: 0.5rem 0;
+  text-align: center;
+  border-bottom: 1px solid #333;
+}
+
+.phone-number {
+  font-size: 0.95rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
 }
 
 .header-content {
@@ -18,7 +30,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2rem;
+  padding: 1rem 2rem;
 }
 
 .logo {
