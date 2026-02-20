@@ -51,9 +51,14 @@ function Dashboard({ projects, loading }) {
               <p>
                 <strong>Start Date:</strong> {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set'}
               </p>
-              <Link to={`/projects/${project.id}`} className="btn" style={{ marginTop: '1rem' }}>
-                View Details
-              </Link>
+              <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+                <Link to={`/customer/${project.id}`} className="btn" style={{ flex: 1 }}>
+                  View Details
+                </Link>
+                <Link to={`/projects/${project.id}`} className="btn secondary" style={{ flex: 1 }}>
+                  Edit
+                </Link>
+              </div>
             </div>
           ))}
         </div>
