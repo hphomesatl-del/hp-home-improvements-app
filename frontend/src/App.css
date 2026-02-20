@@ -30,7 +30,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 1.5rem 2rem;
 }
 
 .logo {
@@ -47,7 +47,7 @@
 }
 
 .logo-image {
-  height: 60px;
+  height: 120px;
   width: auto;
   object-fit: contain;
 }
