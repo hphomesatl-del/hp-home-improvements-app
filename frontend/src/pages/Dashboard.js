@@ -48,6 +48,11 @@ function Dashboard({ projects, loading }) {
               <p>
                 <strong>Status:</strong> <span className={getStatusClass(project.status)}>{project.status}</span>
               </p>
+              {project.current_phase && (
+                <p>
+                  <strong>Current Phase:</strong> {project.current_phase}
+                </p>
+              )}
               <p>
                 <strong>Start Date:</strong> {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set'}
               </p>

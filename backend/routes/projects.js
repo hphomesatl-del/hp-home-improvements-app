@@ -4,12 +4,24 @@ const { v4: uuidv4 } = require('uuid');
 module.exports = (pool) => {
   const router = express.Router();
 
-  // GET all projects
+  // GET all projects with current phase info
   router.get('/', async (req, res) => {
     try {
-      const result = await pool.query(
-        'SELECT * FROM projects ORDER BY created_at DESC'
-      );
+      const result = await pool.query(`
+        SELECT 
+          p.*,
+          COALESCE(
+            (SELECT CONCAT(ph.phase_order, ': ', ph.name, ' (', ph.status, ')')
+             FROM phases ph 
+             WHERE ph.project_id = p.id 
+             AND ph.status != 'completed'
+             ORDER BY ph.phase_order ASC 
+             LIMIT 1),
+            'No active phases'
+          ) as current_phase
+        FROM projects p 
+        ORDER BY p.created_at DESC
+      `);
       res.json(result.rows);
     } catch (err) {
       res.status(500).json({ error: err.message });
