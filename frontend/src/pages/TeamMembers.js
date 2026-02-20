@@ -6,13 +6,21 @@ function TeamMembers() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/contractors')
-      .then(res => res.json())
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    
+    fetch(`${apiUrl}/api/contractors`)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        return res.json();
+      })
       .then(data => {
-        setTeamMembers(data);
+        setTeamMembers(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(err => {
+        console.error('Error fetching team members:', err);
         setError(err.message);
         setLoading(false);
       });
