@@ -33,7 +33,8 @@ function App() {
         <header className="header">
           <div className="header-content">
             <Link to="/" className="logo">
-              🏗️ HP Home Improvements
+              <img src="/logo.jpg" alt="HP Home Improvements" className="logo-image" />
+              <span className="logo-text">HP Home Improvements</span>
             </Link>
             <nav className="nav">
               <Link to="/">Dashboard</Link>
