@@ -49,9 +49,22 @@ function Dashboard({ projects, loading }) {
                 <strong>Status:</strong> <span className={getStatusClass(project.status)}>{project.status}</span>
               </p>
               {project.current_phase && (
-                <p>
-                  <strong>Current Phase:</strong> {project.current_phase}
-                </p>
+                <div style={{
+                  margin: '0.75rem 0',
+                  padding: '0.5rem 0.75rem',
+                  background: project.status === 'in_progress' ? '#fff3e0' : project.status === 'completed' ? '#e8f5e9' : '#e3f2fd',
+                  border: `2px solid ${project.status === 'in_progress' ? '#ff9800' : project.status === 'completed' ? '#4caf50' : '#2196f3'}`,
+                  borderRadius: '8px',
+                  fontWeight: 'bold',
+                  fontSize: '0.95rem',
+                  color: project.status === 'in_progress' ? '#e65100' : project.status === 'completed' ? '#2e7d32' : '#1565c0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem'
+                }}>
+                  <span>{project.status === 'in_progress' ? '🔨' : project.status === 'completed' ? '✅' : '📋'}</span>
+                  <span>{project.current_phase} — {project.status === 'in_progress' ? 'In Progress' : project.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+                </div>
               )}
               <p>
                 <strong>Start Date:</strong> {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set'}

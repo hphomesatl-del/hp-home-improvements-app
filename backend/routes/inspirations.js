@@ -2,6 +2,7 @@ const express = require('express');
 const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
 
 module.exports = (pool) => {
   const router = express.Router();
@@ -93,7 +94,7 @@ module.exports = (pool) => {
 
       // Get images from category folder
       const imagesRes = await drive.files.list({
-        q: `'${categoryFolderId}' in parents and (mimeType='image/jpeg' or mimeType='image/png' or mimeType='image/gif' or mimeType='image/webp') and trashed=false`,
+        q: `'${categoryFolderId}' in parents and (mimeType='image/jpeg' or mimeType='image/png' or mimeType='image/gif' or mimeType='image/webp' or mimeType='image/heif' or mimeType='image/heic') and trashed=false`,
         spaces: 'drive',
         fields: 'files(id, name, mimeType, createdTime)',
         pageSize: 100,
@@ -143,15 +144,46 @@ module.exports = (pool) => {
         alt: 'media'
       }, { responseType: 'stream' });
 
-      res.setHeader('Content-Type', fileRes.data.mimeType || 'image/jpeg');
-      res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
-      res.setHeader('Content-Disposition', `inline; filename="${fileRes.data.name}"`);
+      const mimeType = fileRes.data.mimeType || 'image/jpeg';
+      const isHeic = mimeType === 'image/heif' || mimeType === 'image/heic' || 
+                     (fileRes.data.name && fileRes.data.name.toLowerCase().endsWith('.heic'));
 
-      file.data.pipe(res);
-      file.data.on('error', (err) => {
-        console.error('Stream error:', err);
-        res.status(500).json({ error: 'Failed to stream image' });
-      });
+      if (isHeic) {
+        // Convert HEIC to JPEG for browser compatibility
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+
+        const chunks = [];
+        file.data.on('data', (chunk) => chunks.push(chunk));
+        file.data.on('end', async () => {
+          try {
+            const buffer = Buffer.concat(chunks);
+            const jpegBuffer = await sharp(buffer).jpeg({ quality: 85 }).toBuffer();
+            res.setHeader('Content-Type', 'image/jpeg');
+            res.setHeader('Content-Disposition', `inline; filename="${fileRes.data.name.replace(/\.heic$/i, '.jpg')}"`);
+            res.end(jpegBuffer);
+          } catch (convErr) {
+            console.error('HEIC conversion failed, serving raw:', convErr.message);
+            // Fallback: serve the raw image (Safari and modern Chrome support HEIC)
+            res.setHeader('Content-Type', mimeType);
+            res.setHeader('Content-Disposition', `inline; filename="${fileRes.data.name}"`);
+            res.end(Buffer.concat(chunks));
+          }
+        });
+        file.data.on('error', (err) => {
+          console.error('Stream error:', err);
+          if (!res.headersSent) res.status(500).json({ error: 'Failed to stream image' });
+        });
+      } else {
+        res.setHeader('Content-Type', mimeType);
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        res.setHeader('Content-Disposition', `inline; filename="${fileRes.data.name}"`);
+
+        file.data.pipe(res);
+        file.data.on('error', (err) => {
+          console.error('Stream error:', err);
+          if (!res.headersSent) res.status(500).json({ error: 'Failed to stream image' });
+        });
+      }
     } catch (err) {
       console.error('Error streaming image:', err);
       res.status(500).json({ error: err.message });
