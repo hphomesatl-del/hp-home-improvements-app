@@ -32,7 +32,7 @@ module.exports = (pool) => {
         `INSERT INTO users (id, email, password_hash, name, role)
          VALUES ($1, $2, $3, $4, $5)
          RETURNING id, email, name, role`,
-        [id, email, password_hash, name, role || 'user']
+        [id, email, password_hash, name, 'customer']
       );
 
       const token = jwt.sign(

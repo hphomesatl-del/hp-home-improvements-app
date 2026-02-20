@@ -1,128 +1,118 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function Login() {
-  const [isRegistering, setIsRegistering] = useState(false);
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+function Login({ onLoginSuccess }) {
+  const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-    try {
-      const res = await fetch(`${apiUrl}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/projects');
-      } else {
-        setError(data.error || 'Login failed');
-      }
-    } catch (err) {
-      setError('Unable to connect to server');
-    }
-  };
+    setLoading(true);
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
     try {
-      const res = await fetch(`${apiUrl}/api/auth/register`, {
+      const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
+      const body = isRegister
+        ? { email, password, name }
+        : { email, password };
+
+      const res = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name, role: 'admin' }),
+        body: JSON.stringify(body),
       });
+
       const data = await res.json();
-      if (res.ok) {
-        setSuccess('Account created! Signing you in...');
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setTimeout(() => navigate('/projects'), 1000);
-      } else {
-        setError(data.error || 'Registration failed');
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Something went wrong');
       }
+
+      // Store token and user info
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      // Notify parent and redirect
+      if (onLoginSuccess) onLoginSuccess();
+      navigate('/projects');
     } catch (err) {
-      setError('Unable to connect to server');
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-page">
-      <div className="login-container">
-        <h2>{isRegistering ? 'Create Account' : 'Login'}</h2>
-        <p>{isRegistering ? 'Sign up to get started' : 'Sign in to manage your projects'}</p>
+      <div className="login-card">
+        <h1>{isRegister ? 'Create Account' : 'Welcome Back'}</h1>
+        <p className="login-subtitle">
+          {isRegister
+            ? 'Sign up to track your home improvement project'
+            : 'Sign in to view your projects'}
+        </p>
+
         {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
-        <form onSubmit={isRegistering ? handleRegister : handleLogin}>
-          {isRegistering && (
+
+        <form onSubmit={handleSubmit}>
+          {isRegister && (
             <div className="form-group">
               <label>Full Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your name"
+                placeholder="John Smith"
                 required
               />
             </div>
           )}
+
           <div className="form-group">
             <label>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="you@example.com"
               required
             />
           </div>
+
           <div className="form-group">
             <label>Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder="••••••••"
               required
+              minLength={6}
             />
           </div>
-          <button type="submit" className="btn btn-primary">
-            {isRegistering ? 'Create Account' : 'Sign In'}
+
+          <button type="submit" className="btn login-btn" disabled={loading}>
+            {loading ? 'Please wait...' : isRegister ? 'Create Account' : 'Sign In'}
           </button>
         </form>
-        <p style={{ marginTop: '20px', textAlign: 'center' }}>
-          {isRegistering ? 'Already have an account?' : "Don't have an account?"}{' '}
+
+        <p className="toggle-auth">
+          {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
           <button
+            className="link-btn"
             onClick={() => {
-              setIsRegistering(!isRegistering);
+              setIsRegister(!isRegister);
               setError('');
-              setSuccess('');
-              setEmail('');
-              setPassword('');
-              setName('');
-            }}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#007bff',
-              cursor: 'pointer',
-              textDecoration: 'underline'
             }}
           >
-            {isRegistering ? 'Login' : 'Register'}
+            {isRegister ? 'Sign In' : 'Sign Up'}
           </button>
         </p>
       </div>

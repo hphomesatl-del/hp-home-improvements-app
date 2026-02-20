@@ -15,7 +15,7 @@ CREATE TABLE users (
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   name VARCHAR(255) NOT NULL,
-  role VARCHAR(50), -- admin, pm, contractor, customer, designer
+  role VARCHAR(50) DEFAULT 'customer', -- admin, pm, contractor, customer, designer
   phone VARCHAR(20),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -50,6 +50,7 @@ CREATE TABLE projects (
   status VARCHAR(50) DEFAULT 'planning', -- planning, in-progress, completed, on-hold
   estimated_budget DECIMAL(12,2),
   actual_budget DECIMAL(12,2),
+  customer_id UUID REFERENCES users(id),
   notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -128,6 +129,7 @@ CREATE TABLE photos (
 -- Indexes for Performance
 CREATE INDEX idx_projects_status ON projects(status);
 CREATE INDEX idx_projects_customer_email ON projects(customer_email);
+CREATE INDEX idx_projects_customer_id ON projects(customer_id);
 CREATE INDEX idx_phases_project_id ON phases(project_id);
 CREATE INDEX idx_phases_status ON phases(status);
 CREATE INDEX idx_phases_contractor_id ON phases(contractor_id);
