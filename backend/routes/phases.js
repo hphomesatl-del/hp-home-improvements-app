@@ -8,7 +8,14 @@ module.exports = (pool) => {
   router.get('/project/:projectId', async (req, res) => {
     try {
       const result = await pool.query(
-        'SELECT * FROM phases WHERE project_id = $1 ORDER BY phase_order',
+        `SELECT ph.*, 
+                c.name as contractor_name, 
+                c.trade as contractor_trade, 
+                c.phone as contractor_phone
+         FROM phases ph
+         LEFT JOIN contractors c ON c.id = ph.contractor_id
+         WHERE ph.project_id = $1 
+         ORDER BY ph.phase_order`,
         [req.params.projectId]
       );
       res.json(result.rows);
@@ -21,7 +28,13 @@ module.exports = (pool) => {
   router.get('/:id', async (req, res) => {
     try {
       const result = await pool.query(
-        'SELECT * FROM phases WHERE id = $1',
+        `SELECT ph.*, 
+                c.name as contractor_name, 
+                c.trade as contractor_trade, 
+                c.phone as contractor_phone
+         FROM phases ph
+         LEFT JOIN contractors c ON c.id = ph.contractor_id
+         WHERE ph.id = $1`,
         [req.params.id]
       );
 

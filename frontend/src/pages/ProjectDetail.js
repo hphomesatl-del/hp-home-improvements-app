@@ -230,19 +230,54 @@ function ProjectDetail() {
           <table style={{ width: '100%', marginTop: '1rem', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #ddd' }}>
+                <th style={{ padding: '0.75rem', textAlign: 'left' }}>#</th>
                 <th style={{ padding: '0.75rem', textAlign: 'left' }}>Phase</th>
                 <th style={{ padding: '0.75rem', textAlign: 'left' }}>Contractor</th>
+                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Dates</th>
                 <th style={{ padding: '0.75rem', textAlign: 'left' }}>Status</th>
               </tr>
             </thead>
             <tbody>
-              {project.phases.map((phase) => (
-                <tr key={phase.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '0.75rem' }}>{phase.name}</td>
-                  <td style={{ padding: '0.75rem' }}>{phase.contractor_id || 'TBD'}</td>
-                  <td style={{ padding: '0.75rem' }}>{phase.status}</td>
-                </tr>
-              ))}
+              {project.phases.map((phase) => {
+                const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                const startDate = phase.actual_start_date || phase.planned_start_date;
+                const endDate = phase.actual_end_date || phase.planned_end_date;
+                const dateRange = startDate && endDate ? `${formatDate(startDate)} - ${formatDate(endDate)}` : 'TBD';
+                const statusColor = phase.status === 'completed' ? '#28a745' : phase.status === 'in_progress' ? '#ffc107' : '#6c757d';
+                return (
+                  <tr key={phase.id} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '0.75rem', fontWeight: 'bold', color: '#666' }}>{phase.phase_order}</td>
+                    <td style={{ padding: '0.75rem' }}>{phase.name}</td>
+                    <td style={{ padding: '0.75rem' }}>
+                      {phase.contractor_name ? (
+                        <div>
+                          <strong>{phase.contractor_name}</strong>
+                          <br />
+                          <span style={{ fontSize: '0.85em', color: '#666' }}>{phase.contractor_trade}</span>
+                          {phase.contractor_phone && (
+                            <span style={{ fontSize: '0.85em', color: '#888', marginLeft: '0.5rem' }}>
+                              📞 {phase.contractor_phone}
+                            </span>
+                          )}
+                        </div>
+                      ) : 'TBD'}
+                    </td>
+                    <td style={{ padding: '0.75rem', whiteSpace: 'nowrap' }}>{dateRange}</td>
+                    <td style={{ padding: '0.75rem' }}>
+                      <span style={{
+                        background: statusColor,
+                        color: 'white',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '12px',
+                        fontSize: '0.85em',
+                        fontWeight: '500'
+                      }}>
+                        {phase.status?.replace('_', ' ')}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         ) : (

@@ -104,7 +104,14 @@ module.exports = (pool) => {
       }
 
       const phases = await pool.query(
-        'SELECT * FROM phases WHERE project_id = $1 ORDER BY phase_order',
+        `SELECT ph.*, 
+                c.name as contractor_name, 
+                c.trade as contractor_trade, 
+                c.phone as contractor_phone
+         FROM phases ph
+         LEFT JOIN contractors c ON c.id = ph.contractor_id
+         WHERE ph.project_id = $1 
+         ORDER BY ph.phase_order`,
         [projectId]
       );
 
