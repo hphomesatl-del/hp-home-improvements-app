@@ -8,6 +8,7 @@ import ProjectDetail from './pages/ProjectDetail';
 import NewProject from './pages/NewProject';
 import Portfolio from './pages/Portfolio';
 import TeamMembers from './pages/TeamMembers';
+import CustomerView from './pages/CustomerView';
 
 function App() {
   const [projects, setProjects] = useState([]);
@@ -55,6 +56,7 @@ function App() {
             <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/projects/new" element={<NewProject />} />
             <Route path="/team" element={<TeamMembers />} />
+            <Route path="/customer/:projectId" element={<CustomerView />} />
           </Routes>
         </main>
 
