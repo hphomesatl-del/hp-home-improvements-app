@@ -25,14 +25,18 @@ module.exports = (pool) => {
 
   const categoryFolderMap = {
     'kitchens': 'Kitchens',
-    'deck': 'Deck',
-    'bathroom': 'Bathroom',
-    'fireplace': 'Fireplace',
+    'deck': 'Decks',
+    'decks': 'Decks',
+    'bathroom': 'Bathrooms',
+    'bathrooms': 'Bathrooms',
+    'fireplace': 'Fireplaces',
+    'fireplaces': 'Fireplaces',
     'basements': 'Basements',
     'drywall': 'Drywall',
     'beams': 'Beams',
     'flooring': 'Flooring',
-    'new-builds': 'New Builds'
+    'new-builds': 'New builds',
+    'closets': 'Closets'
   };
 
   const imageCache = {};

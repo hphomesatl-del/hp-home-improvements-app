@@ -8,12 +8,13 @@ function Inspirations() {
 
   const categories = [
     { slug: 'kitchens', label: 'Kitchens' },
-    { slug: 'deck', label: 'Deck' },
-    { slug: 'bathroom', label: 'Bathroom' },
-    { slug: 'fireplace', label: 'Fireplace' },
+    { slug: 'bathrooms', label: 'Bathrooms' },
     { slug: 'basements', label: 'Basements' },
-    { slug: 'drywall', label: 'Drywall' },
     { slug: 'beams', label: 'Beams' },
+    { slug: 'closets', label: 'Closets' },
+    { slug: 'decks', label: 'Decks' },
+    { slug: 'drywall', label: 'Drywall' },
+    { slug: 'fireplaces', label: 'Fireplaces' },
     { slug: 'flooring', label: 'Flooring' },
     { slug: 'new-builds', label: 'New Builds' }
   ];
