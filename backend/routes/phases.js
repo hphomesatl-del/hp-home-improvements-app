@@ -81,7 +81,8 @@ module.exports = (pool) => {
         planned_end_date,
         actual_start_date,
         actual_end_date,
-        notes
+        notes,
+        is_critical_path
       } = req.body;
 
       const result = await pool.query(
@@ -92,10 +93,11 @@ module.exports = (pool) => {
              actual_start_date = COALESCE($5, actual_start_date),
              actual_end_date = COALESCE($6, actual_end_date),
              notes = COALESCE($7, notes),
+             is_critical_path = COALESCE($8, is_critical_path),
              updated_at = CURRENT_TIMESTAMP
          WHERE id = $1
          RETURNING *`,
-        [id, status, planned_start_date, planned_end_date, actual_start_date, actual_end_date, notes]
+        [id, status, planned_start_date, planned_end_date, actual_start_date, actual_end_date, notes, is_critical_path]
       );
 
       if (result.rows.length === 0) {
