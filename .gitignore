@@ -9,6 +9,10 @@ yarn-error.log*
 .env.local
 .env.*.local
 
+# Credentials (DO NOT COMMIT)
+*-service-account.json
+hphomesatl-service-account.json
+
 # IDE
 .vscode/
 .idea/

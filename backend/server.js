@@ -33,6 +33,7 @@ app.use('/api/phases', require('./routes/phases')(pool));
 app.use('/api/decisions', require('./routes/decisions')(pool));
 app.use('/api/contractors', require('./routes/contractors')(pool));
 app.use('/api/auth', require('./routes/auth')(pool));
+app.use('/api/inspirations', require('./routes/inspirations')(pool));
 
 // Health check
 app.get('/health', (req, res) => {

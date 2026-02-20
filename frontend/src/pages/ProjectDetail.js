@@ -9,7 +9,8 @@ function ProjectDetail() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';\n    fetch(`${apiUrl}/api/projects/${id}`)
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    fetch(`${apiUrl}/api/projects/${id}`)
       .then(res => res.json())
       .then(data => {
         setProject(data);
