@@ -1,0 +1,233 @@
+.customer-portal {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.portal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.portal-header h1 {
+  margin: 0;
+  color: #1a1a2e;
+}
+
+.portal-subtitle {
+  color: #666;
+  margin: 0.25rem 0 0;
+}
+
+.logout-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.logout-btn:hover {
+  background: #c82333;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.project-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.portal-project-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.portal-project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.portal-project-card h3 {
+  margin: 0 0 0.5rem;
+  color: #1a1a2e;
+}
+
+.project-customer {
+  color: #666;
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+}
+
+.project-meta {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-planning { background: #fff3cd; color: #856404; }
+.status-in-progress { background: #cce5ff; color: #004085; }
+.status-completed { background: #d4edda; color: #155724; }
+.status-on-hold { background: #f8d7da; color: #721c24; }
+
+.project-budget {
+  font-weight: 600;
+  color: #28a745;
+}
+
+.project-date {
+  color: #888;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.no-projects {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.no-projects h2 {
+  color: #666;
+}
+
+.portal-footer {
+  text-align: center;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+  color: #888;
+}
+
+/* Login Page Styles */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 2rem;
+}
+
+.login-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.login-card h1 {
+  margin: 0 0 0.5rem;
+  color: #1a1a2e;
+  text-align: center;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.login-card .form-group {
+  margin-bottom: 1rem;
+}
+
+.login-card label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.login-card input:focus {
+  outline: none;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: #1a1a2e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.2s;
+}
+
+.login-btn:hover {
+  background: #2d2d4e;
+}
+
+.login-btn:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.toggle-auth {
+  text-align: center;
+  margin-top: 1.25rem;
+  color: #666;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #4a90d9;
+  cursor: pointer;
+  font-size: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}

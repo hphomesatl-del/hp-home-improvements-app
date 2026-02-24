@@ -215,3 +215,18 @@
     grid-template-columns: 1fr;
   }
 }
+
+.portal-nav {
+  margin-bottom: 1rem;
+}
+
+.back-link {
+  color: #4a90d9;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}

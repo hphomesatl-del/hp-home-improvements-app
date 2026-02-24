@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation, Link } from 'react-router-dom';
 import '../styles/CustomerView.css';
 
 function CustomerView() {
   const { projectId } = useParams();
+  const location = useLocation();
+  const isPortalView = location.pathname.startsWith('/portal/');
   const [project, setProject] = useState(null);
   const [phases, setPhases] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,15 +13,22 @@ function CustomerView() {
 
   useEffect(() => {
     const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    const token = localStorage.getItem('token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
     // Fetch project
-    fetch(`${apiUrl}/api/projects/${projectId}`)
-      .then(res => res.json())
+    fetch(`${apiUrl}/api/projects/${projectId}`, { headers })
+      .then(res => {
+        if (res.status === 401 || res.status === 403) {
+          throw new Error('Unauthorized');
+        }
+        return res.json();
+      })
       .then(data => setProject(data))
       .catch(err => setError(err.message));
 
     // Fetch phases
-    fetch(`${apiUrl}/api/phases/project/${projectId}`)
+    fetch(`${apiUrl}/api/phases/project/${projectId}`, { headers })
       .then(res => res.json())
       .then(data => {
         setPhases(Array.isArray(data) ? data : []);
@@ -37,6 +46,11 @@ function CustomerView() {
 
   return (
     <div className="customer-view">
+      {isPortalView && (
+        <div className="portal-nav">
+          <Link to="/portal" className="back-link">← Back to My Projects</Link>
+        </div>
+      )}
       <div className="customer-header">
         <h1>Project Status: {project.customer_name}</h1>
         <p className="customer-address">{project.address}</p>

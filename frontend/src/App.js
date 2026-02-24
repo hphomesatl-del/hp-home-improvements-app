@@ -9,6 +9,8 @@ import NewProject from './pages/NewProject';
 import Portfolio from './pages/Portfolio';
 import TeamMembers from './pages/TeamMembers';
 import CustomerView from './pages/CustomerView';
+import CustomerPortal from './pages/CustomerPortal';
+import Login from './pages/Login';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -50,6 +52,7 @@ function App() {
               <Link to="/portfolio">Portfolio</Link>
               <Link to="/projects/new">New Project</Link>
               <Link to="/team">Team</Link>
+              <Link to="/login" className="customer-login-link">Customer Login</Link>
             </nav>
           </div>
         </header>
@@ -64,6 +67,9 @@ function App() {
             <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/projects/new" element={<NewProject />} />
             <Route path="/team" element={<TeamMembers />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/portal" element={<CustomerPortal />} />
+            <Route path="/portal/project/:projectId" element={<CustomerView />} />
             <Route path="/customer/:projectId" element={<CustomerView />} />
           </Routes>
         </main>

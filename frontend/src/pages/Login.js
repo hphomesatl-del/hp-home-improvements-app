@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/CustomerPortal.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -39,9 +40,13 @@ function Login({ onLoginSuccess }) {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      // Notify parent and redirect
+      // Notify parent and redirect based on role
       if (onLoginSuccess) onLoginSuccess();
-      navigate('/projects');
+      if (data.user.role === 'admin') {
+        navigate('/projects');
+      } else {
+        navigate('/portal');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
