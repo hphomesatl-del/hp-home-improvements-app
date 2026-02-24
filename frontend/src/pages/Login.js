@@ -83,12 +83,12 @@ function Login({ onLoginSuccess }) {
           )}
 
           <div className="form-group">
-            <label>Login</label>
+            <label>Sign In</label>
             <input
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Your login ID"
+              placeholder="Username or Email"
               required
             />
           </div>

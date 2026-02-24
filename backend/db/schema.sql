@@ -51,6 +51,7 @@ CREATE TABLE projects (
   estimated_budget DECIMAL(12,2),
   actual_budget DECIMAL(12,2),
   customer_id UUID REFERENCES users(id),
+  category VARCHAR(10), -- 'Major' (>= $30k) or 'Minor' (< $30k)
   notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

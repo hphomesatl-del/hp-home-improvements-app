@@ -173,6 +173,11 @@ function ProjectsOverview({ projects, statusFilter, setStatusFilter }) {
                 <tr key={p.id}>
                   <td className="td-customer">
                     <strong>{p.customer_name}</strong>
+                    {p.category && (
+                      <span className={`category-badge category-${p.category.toLowerCase()}`}>
+                        {p.category}
+                      </span>
+                    )}
                   </td>
                   <td className="td-address">{p.address}</td>
                   <td>
@@ -274,6 +279,7 @@ function PipelineView({ projects, totalBudget, totalSpent }) {
             {prjs.map(p => (
               <Link to={`/customer/${p.id}`} key={p.id} className="pipeline-card">
                 <strong>{p.customer_name}</strong>
+                {p.category && <span className={`category-badge category-${p.category.toLowerCase()}`}>{p.category}</span>}
                 <span className="pipeline-address">{p.address}</span>
                 {p.estimated_budget && (
                   <span className="pipeline-budget">${parseFloat(p.estimated_budget).toLocaleString()}</span>

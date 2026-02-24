@@ -12,6 +12,7 @@ import CustomerView from './pages/CustomerView';
 import CustomerPortal from './pages/CustomerPortal';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
+import Inspirations from './pages/Inspirations';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -84,6 +85,7 @@ function App() {
             <Route path="/projects/new" element={<NewProject />} />
             <Route path="/team" element={<TeamMembers />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/inspirations" element={<Inspirations />} />
             <Route path="/portal" element={<CustomerPortal />} />
             <Route path="/portal/project/:projectId" element={<CustomerView />} />
             <Route path="/customer/:projectId" element={<CustomerView />} />

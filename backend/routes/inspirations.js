@@ -43,6 +43,81 @@ module.exports = (pool) => {
   const imageCache = {};
   const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
+  // GET /api/inspirations/thumbnails - Get first image for each category
+  router.get('/thumbnails', async (req, res) => {
+    try {
+      // Check cache
+      if (imageCache['__thumbnails'] && Date.now() - imageCache['__thumbnails'].timestamp < CACHE_TTL) {
+        return res.json(imageCache['__thumbnails'].data);
+      }
+
+      if (!googleAuth) {
+        return res.status(500).json({ error: 'Google Drive not configured' });
+      }
+
+      const drive = google.drive({ version: 'v3', auth: googleAuth });
+
+      // Find the Inspirations folder
+      const inspirationsFolderRes = await drive.files.list({
+        q: "name='Inspirations' and mimeType='application/vnd.google-apps.folder' and trashed=false",
+        spaces: 'drive',
+        fields: 'files(id, name)',
+        pageSize: 1
+      });
+
+      if (!inspirationsFolderRes.data.files || inspirationsFolderRes.data.files.length === 0) {
+        return res.json({});
+      }
+
+      const inspirationsFolderId = inspirationsFolderRes.data.files[0].id;
+      const baseUrl = process.env.API_BASE_URL || 'http://localhost:5000';
+      const thumbnails = {};
+
+      // Get unique folder names
+      const uniqueFolders = [...new Set(Object.values(categoryFolderMap))];
+
+      for (const folderName of uniqueFolders) {
+        try {
+          const categoryFolderRes = await drive.files.list({
+            q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and '${inspirationsFolderId}' in parents and trashed=false`,
+            spaces: 'drive',
+            fields: 'files(id, name)',
+            pageSize: 1
+          });
+
+          if (categoryFolderRes.data.files && categoryFolderRes.data.files.length > 0) {
+            const folderId = categoryFolderRes.data.files[0].id;
+            const imagesRes = await drive.files.list({
+              q: `'${folderId}' in parents and (mimeType='image/jpeg' or mimeType='image/png' or mimeType='image/gif' or mimeType='image/webp' or mimeType='image/heif' or mimeType='image/heic') and trashed=false`,
+              spaces: 'drive',
+              fields: 'files(id, name)',
+              pageSize: 1,
+              orderBy: 'createdTime'
+            });
+
+            if (imagesRes.data.files && imagesRes.data.files.length > 0) {
+              const file = imagesRes.data.files[0];
+              // Map back to slug(s)
+              for (const [slug, name] of Object.entries(categoryFolderMap)) {
+                if (name === folderName) {
+                  thumbnails[slug] = `${baseUrl}/api/inspirations/image/${file.id}`;
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error(`Error fetching thumbnail for ${folderName}:`, err.message);
+        }
+      }
+
+      imageCache['__thumbnails'] = { data: thumbnails, timestamp: Date.now() };
+      res.json(thumbnails);
+    } catch (err) {
+      console.error('Error fetching thumbnails:', err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // GET /api/inspirations/:category
   router.get('/:category', async (req, res) => {
     try {
