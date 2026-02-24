@@ -11,12 +11,16 @@ import TeamMembers from './pages/TeamMembers';
 import CustomerView from './pages/CustomerView';
 import CustomerPortal from './pages/CustomerPortal';
 import Login from './pages/Login';
+import AdminDashboard from './pages/AdminDashboard';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function App() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('user')); } catch { return null; }
+  });
 
   const fetchProjects = () => {
     fetch(`${API_URL}/api/projects`)
@@ -33,6 +37,12 @@ function App() {
 
   useEffect(() => {
     fetchProjects();
+    // Listen for login/logout
+    const handleStorage = () => {
+      try { setUser(JSON.parse(localStorage.getItem('user'))); } catch { setUser(null); }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   return (
@@ -52,14 +62,20 @@ function App() {
               <Link to="/portfolio">Portfolio</Link>
               <Link to="/projects/new">New Project</Link>
               <Link to="/team">Team</Link>
-              <Link to="/login" className="customer-login-link">Customer Login</Link>
+              {user?.role === 'admin' && <Link to="/admin">Owner Dashboard</Link>}
+              <Link to="/login" className="customer-login-link">{user ? 'Sign Out' : 'Customer Login'}</Link>
             </nav>
           </div>
         </header>
 
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<Navigate to="/projects" />} />
+            <Route path="/" element={
+              user?.role === 'admin' ? <Navigate to="/admin" /> :
+              user ? <Navigate to="/portal" /> :
+              <Navigate to="/login" />
+            } />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/projects" element={
               <Dashboard projects={projects} loading={loading} user={{ role: 'admin' }} />

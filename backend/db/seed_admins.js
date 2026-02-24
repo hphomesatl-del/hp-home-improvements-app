@@ -16,9 +16,10 @@ const pool = new Pool({
 });
 
 const admins = [
-  { name: 'Greg Hutzell',    email: 'greg@hphome.com',    password: 'admin2421' },
-  { name: 'Zachary Hutzell', email: 'zachary@hphome.com', password: 'admin2421' },
-  { name: 'Drake Hutzell',   email: 'drake@hphome.com',   password: 'admin2421' },
+  { name: 'Greg Hutzell',    email: 'greg@hphome.com',        password: 'admin2421' },
+  { name: 'Greg Hutzell',    email: 'hphomesatl@gmail.com',   password: 'admin2421' },
+  { name: 'Zachary Hutzell', email: 'zachary@hphome.com',     password: 'admin2421' },
+  { name: 'Drake Hutzell',   email: 'drake@hphome.com',       password: 'admin2421' },
 ];
 
 async function seedAdmins() {

@@ -42,8 +42,10 @@ function Login({ onLoginSuccess }) {
 
       // Notify parent and redirect based on role
       if (onLoginSuccess) onLoginSuccess();
+      // Trigger re-render in App
+      window.dispatchEvent(new Event('storage'));
       if (data.user.role === 'admin') {
-        navigate('/projects');
+        navigate('/admin');
       } else {
         navigate('/portal');
       }

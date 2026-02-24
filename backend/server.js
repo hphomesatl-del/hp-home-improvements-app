@@ -36,6 +36,7 @@ app.use('/api/contractors', require('./routes/contractors')(pool));
 app.use('/api/auth', require('./routes/auth')(pool));
 app.use('/api/inspirations', require('./routes/inspirations')(pool));
 app.use('/api/projects', require('./routes/plans')(pool));
+app.use('/api/admin', require('./routes/admin')(pool));
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
