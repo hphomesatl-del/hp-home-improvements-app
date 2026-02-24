@@ -1,11 +1,14 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const { optionalAuth, verifyProjectOwnership, getCustomerProjectIds } = require('../middleware/customerScope');
 
 module.exports = (pool) => {
   const router = express.Router();
 
-  // GET all decisions for a project
-  router.get('/project/:projectId', async (req, res) => {
+  router.use(optionalAuth);
+
+  // GET all decisions for a project — ownership verified
+  router.get('/project/:projectId', verifyProjectOwnership(pool), async (req, res) => {
     try {
       const result = await pool.query(
         'SELECT * FROM customer_decisions WHERE project_id = $1 ORDER BY deadline',
@@ -17,12 +20,24 @@ module.exports = (pool) => {
     }
   });
 
-  // GET decisions by category
+  // GET decisions by category — scoped to customer's projects
   router.get('/category/:category', async (req, res) => {
     try {
+      if (req.userRole === 'admin') {
+        const result = await pool.query(
+          'SELECT * FROM customer_decisions WHERE category = $1 ORDER BY deadline',
+          [req.params.category]
+        );
+        return res.json(result.rows);
+      }
+
+      // Customer: only their projects' decisions
+      const projectIds = await getCustomerProjectIds(pool, req.userId, req.userEmail);
+      if (projectIds.length === 0) return res.json([]);
+
       const result = await pool.query(
-        'SELECT * FROM customer_decisions WHERE category = $1 ORDER BY deadline',
-        [req.params.category]
+        'SELECT * FROM customer_decisions WHERE category = $1 AND project_id = ANY($2) ORDER BY deadline',
+        [req.params.category, projectIds]
       );
       res.json(result.rows);
     } catch (err) {
@@ -30,7 +45,7 @@ module.exports = (pool) => {
     }
   });
 
-  // GET single decision
+  // GET single decision — verify ownership
   router.get('/:id', async (req, res) => {
     try {
       const result = await pool.query(
@@ -42,21 +57,31 @@ module.exports = (pool) => {
         return res.status(404).json({ error: 'Decision not found' });
       }
 
+      if (req.userRole !== 'admin') {
+        const decision = result.rows[0];
+        const check = await pool.query(
+          'SELECT id FROM projects WHERE id = $1 AND (customer_id = $2 OR customer_email = $3)',
+          [decision.project_id, req.userId, req.userEmail]
+        );
+        if (check.rows.length === 0) {
+          return res.status(403).json({ error: 'Access denied' });
+        }
+      }
+
       res.json(result.rows[0]);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
 
-  // POST create new decision
+  // POST create new decision — admin only
   router.post('/', async (req, res) => {
     try {
-      const {
-        project_id,
-        category,
-        deadline,
-        notes
-      } = req.body;
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const { project_id, category, deadline, notes } = req.body;
 
       const id = uuidv4();
       const result = await pool.query(
@@ -73,17 +98,15 @@ module.exports = (pool) => {
     }
   });
 
-  // PUT update decision (selections, vendor info, status)
+  // PUT update decision
   router.put('/:id', async (req, res) => {
     try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
       const { id } = req.params;
-      const {
-        status,
-        selections,
-        vendor_info,
-        photos,
-        notes
-      } = req.body;
+      const { status, selections, vendor_info, photos, notes } = req.body;
 
       const result = await pool.query(
         `UPDATE customer_decisions 
@@ -111,6 +134,10 @@ module.exports = (pool) => {
   // PUT approve decision
   router.put('/:id/approve', async (req, res) => {
     try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
       const { id } = req.params;
       const { approved_by } = req.body;
 
@@ -135,9 +162,13 @@ module.exports = (pool) => {
     }
   });
 
-  // DELETE decision
+  // DELETE decision — admin only
   router.delete('/:id', async (req, res) => {
     try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
       const result = await pool.query(
         'DELETE FROM customer_decisions WHERE id = $1 RETURNING id',
         [req.params.id]

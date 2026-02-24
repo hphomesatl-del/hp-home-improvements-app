@@ -1,21 +1,10 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
-const { authenticateToken } = require('../middleware/auth');
-
-// Optional auth middleware - sets req.userRole if token present, but doesn't block
-const optionalAuth = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) {
-    req.userRole = 'admin'; // Default to admin view when no auth
-    return next();
-  }
-  return authenticateToken(req, res, next);
-};
+const { optionalAuth } = require('../middleware/customerScope');
 
 module.exports = (pool) => {
   const router = express.Router();
 
-  // Auth is optional - all routes are publicly accessible
   router.use(optionalAuth);
 
   // GET all projects — admins see all, customers see only their own

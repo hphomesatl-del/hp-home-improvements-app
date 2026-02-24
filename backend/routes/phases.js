@@ -1,11 +1,14 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const { optionalAuth, verifyProjectOwnership } = require('../middleware/customerScope');
 
 module.exports = (pool) => {
   const router = express.Router();
 
-  // GET all phases for a project
-  router.get('/project/:projectId', async (req, res) => {
+  router.use(optionalAuth);
+
+  // GET all phases for a project — ownership verified
+  router.get('/project/:projectId', verifyProjectOwnership(pool), async (req, res) => {
     try {
       const result = await pool.query(
         `SELECT ph.*, 
@@ -24,7 +27,7 @@ module.exports = (pool) => {
     }
   });
 
-  // GET single phase
+  // GET single phase — verify ownership via phase's project
   router.get('/:id', async (req, res) => {
     try {
       const result = await pool.query(
@@ -42,27 +45,35 @@ module.exports = (pool) => {
         return res.status(404).json({ error: 'Phase not found' });
       }
 
+      // Ownership check for customers
+      if (req.userRole !== 'admin') {
+        const phase = result.rows[0];
+        const check = await pool.query(
+          'SELECT id FROM projects WHERE id = $1 AND (customer_id = $2 OR customer_email = $3)',
+          [phase.project_id, req.userId, req.userEmail]
+        );
+        if (check.rows.length === 0) {
+          return res.status(403).json({ error: 'Access denied' });
+        }
+      }
+
       res.json(result.rows[0]);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
 
-  // POST create new phase
+  // POST create new phase — admin only
   router.post('/', async (req, res) => {
     try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
       const {
-        project_id,
-        name,
-        description,
-        contractor_id,
-        phase_order,
-        planned_start_day,
-        planned_duration_days,
-        materials,
-        depends_on,
-        requires_customer_decision,
-        is_critical_path
+        project_id, name, description, contractor_id, phase_order,
+        planned_start_day, planned_duration_days, materials, depends_on,
+        requires_customer_decision, is_critical_path
       } = req.body;
 
       const id = uuidv4();
@@ -84,18 +95,17 @@ module.exports = (pool) => {
     }
   });
 
-  // PUT update phase
+  // PUT update phase — admin only
   router.put('/:id', async (req, res) => {
     try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
       const { id } = req.params;
       const {
-        status,
-        planned_start_date,
-        planned_end_date,
-        actual_start_date,
-        actual_end_date,
-        notes,
-        is_critical_path
+        status, planned_start_date, planned_end_date,
+        actual_start_date, actual_end_date, notes, is_critical_path
       } = req.body;
 
       const result = await pool.query(
@@ -123,9 +133,13 @@ module.exports = (pool) => {
     }
   });
 
-  // DELETE phase
+  // DELETE phase — admin only
   router.delete('/:id', async (req, res) => {
     try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
       const result = await pool.query(
         'DELETE FROM phases WHERE id = $1 RETURNING id',
         [req.params.id]

@@ -1,0 +1,60 @@
+const { authenticateToken } = require('./auth');
+
+/**
+ * Optional auth: sets user info if token present, defaults to admin if not.
+ * Used on routes that serve both admin (no-auth legacy) and customer (auth required).
+ */
+function optionalAuth(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader) {
+    req.userRole = 'admin';
+    return next();
+  }
+  return authenticateToken(req, res, next);
+}
+
+/**
+ * Verifies that the authenticated customer owns the project referenced by :projectId.
+ * Admins pass through. Customers must have customer_id or customer_email match.
+ * Attaches req.verifiedProjectId on success.
+ */
+function verifyProjectOwnership(pool) {
+  return async (req, res, next) => {
+    // Admins can access everything
+    if (req.userRole === 'admin') return next();
+
+    const projectId = req.params.projectId || req.params.id || req.body?.project_id;
+    if (!projectId) {
+      return res.status(400).json({ error: 'Project ID required' });
+    }
+
+    try {
+      const result = await pool.query(
+        'SELECT id FROM projects WHERE id = $1 AND (customer_id = $2 OR customer_email = $3)',
+        [projectId, req.userId, req.userEmail]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      req.verifiedProjectId = projectId;
+      next();
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+}
+
+/**
+ * Returns all project IDs owned by the current customer.
+ */
+async function getCustomerProjectIds(pool, userId, userEmail) {
+  const result = await pool.query(
+    'SELECT id FROM projects WHERE customer_id = $1 OR customer_email = $2',
+    [userId, userEmail]
+  );
+  return result.rows.map(r => r.id);
+}
+
+module.exports = { optionalAuth, verifyProjectOwnership, getCustomerProjectIds };

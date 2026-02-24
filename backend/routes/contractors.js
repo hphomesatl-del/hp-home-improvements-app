@@ -1,14 +1,35 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const { optionalAuth, getCustomerProjectIds } = require('../middleware/customerScope');
 
 module.exports = (pool) => {
   const router = express.Router();
 
+  router.use(optionalAuth);
+
   // GET all contractors
+  // Admins: all active contractors
+  // Customers: only contractors assigned to phases of their project(s)
   router.get('/', async (req, res) => {
     try {
+      if (req.userRole === 'admin') {
+        const result = await pool.query(
+          'SELECT * FROM contractors WHERE active = true ORDER BY name'
+        );
+        return res.json(result.rows);
+      }
+
+      // Customer: get contractors assigned to their project phases
+      const projectIds = await getCustomerProjectIds(pool, req.userId, req.userEmail);
+      if (projectIds.length === 0) return res.json([]);
+
       const result = await pool.query(
-        'SELECT * FROM contractors WHERE active = true ORDER BY name'
+        `SELECT DISTINCT c.*
+         FROM contractors c
+         INNER JOIN phases ph ON ph.contractor_id = c.id
+         WHERE ph.project_id = ANY($1) AND c.active = true
+         ORDER BY c.name`,
+        [projectIds]
       );
       res.json(result.rows);
     } catch (err) {
@@ -19,6 +40,20 @@ module.exports = (pool) => {
   // GET single contractor
   router.get('/:id', async (req, res) => {
     try {
+      if (req.userRole !== 'admin') {
+        // Verify this contractor is assigned to one of the customer's projects
+        const projectIds = await getCustomerProjectIds(pool, req.userId, req.userEmail);
+        const check = await pool.query(
+          `SELECT c.id FROM contractors c
+           INNER JOIN phases ph ON ph.contractor_id = c.id
+           WHERE c.id = $1 AND ph.project_id = ANY($2)`,
+          [req.params.id, projectIds]
+        );
+        if (check.rows.length === 0) {
+          return res.status(403).json({ error: 'Access denied' });
+        }
+      }
+
       const result = await pool.query(
         'SELECT * FROM contractors WHERE id = $1',
         [req.params.id]
@@ -34,19 +69,14 @@ module.exports = (pool) => {
     }
   });
 
-  // POST create new contractor
+  // POST create new contractor — admin only
   router.post('/', async (req, res) => {
     try {
-      const {
-        name,
-        trade,
-        phone,
-        email,
-        company,
-        calendar_id,
-        crew,
-        notes
-      } = req.body;
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const { name, trade, phone, email, company, calendar_id, crew, notes } = req.body;
 
       const id = uuidv4();
       const result = await pool.query(
@@ -63,21 +93,15 @@ module.exports = (pool) => {
     }
   });
 
-  // PUT update contractor
+  // PUT update contractor — admin only
   router.put('/:id', async (req, res) => {
     try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
       const { id } = req.params;
-      const {
-        name,
-        trade,
-        phone,
-        email,
-        company,
-        calendar_id,
-        crew,
-        notes,
-        active
-      } = req.body;
+      const { name, trade, phone, email, company, calendar_id, crew, notes, active } = req.body;
 
       const result = await pool.query(
         `UPDATE contractors 
@@ -106,9 +130,13 @@ module.exports = (pool) => {
     }
   });
 
-  // DELETE contractor (soft delete)
+  // DELETE contractor — admin only
   router.delete('/:id', async (req, res) => {
     try {
+      if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
       const result = await pool.query(
         `UPDATE contractors SET active = false WHERE id = $1 RETURNING id`,
         [req.params.id]
