@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const { optionalAuth, verifyProjectOwnership } = require('../middleware/customerScope');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -20,9 +21,10 @@ const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
 module.exports = (pool) => {
   const router = express.Router();
+  router.use(optionalAuth);
 
   // GET all plans for a project
-  router.get('/:id/plans', async (req, res) => {
+  router.get('/:id/plans', verifyProjectOwnership(pool), async (req, res) => {
     try {
       const result = await pool.query(
         'SELECT * FROM project_plans WHERE project_id = $1 ORDER BY uploaded_at DESC',
@@ -34,8 +36,9 @@ module.exports = (pool) => {
     }
   });
 
-  // POST upload plan
-  router.post('/:id/plans', upload.single('file'), async (req, res) => {
+  // POST upload plan — admin only
+  router.post('/:id/plans', verifyProjectOwnership(pool), upload.single('file'), async (req, res) => {
+    if (req.userRole !== 'admin') return res.status(403).json({ error: 'Admin access required' });
     try {
       if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
       const result = await pool.query(
@@ -48,8 +51,9 @@ module.exports = (pool) => {
     }
   });
 
-  // DELETE plan
-  router.delete('/:id/plans/:planId', async (req, res) => {
+  // DELETE plan — admin only
+  router.delete('/:id/plans/:planId', verifyProjectOwnership(pool), async (req, res) => {
+    if (req.userRole !== 'admin') return res.status(403).json({ error: 'Admin access required' });
     try {
       const plan = await pool.query('SELECT * FROM project_plans WHERE id = $1', [req.params.planId]);
       if (plan.rows.length === 0) return res.status(404).json({ error: 'Plan not found' });
@@ -65,7 +69,7 @@ module.exports = (pool) => {
   });
 
   // GET photos for a trade
-  router.get('/:id/photos/:trade', async (req, res) => {
+  router.get('/:id/photos/:trade', verifyProjectOwnership(pool), async (req, res) => {
     try {
       const result = await pool.query(
         'SELECT * FROM project_photos WHERE project_id = $1 AND trade = $2 ORDER BY uploaded_at DESC',
@@ -91,7 +95,8 @@ module.exports = (pool) => {
   });
   const photoUpload = multer({ storage: photoStorage, limits: { fileSize: 20 * 1024 * 1024 } });
 
-  router.post('/:id/photos/:trade', photoUpload.single('file'), async (req, res) => {
+  router.post('/:id/photos/:trade', verifyProjectOwnership(pool), photoUpload.single('file'), async (req, res) => {
+    if (req.userRole !== 'admin') return res.status(403).json({ error: 'Admin access required' });
     try {
       const validTrades = ['electric', 'plumbing', 'framing'];
       if (!validTrades.includes(req.params.trade)) {
@@ -108,8 +113,9 @@ module.exports = (pool) => {
     }
   });
 
-  // DELETE photo
-  router.delete('/:id/photos/:photoId', async (req, res) => {
+  // DELETE photo — admin only
+  router.delete('/:id/photos/:photoId', verifyProjectOwnership(pool), async (req, res) => {
+    if (req.userRole !== 'admin') return res.status(403).json({ error: 'Admin access required' });
     try {
       const photo = await pool.query('SELECT * FROM project_photos WHERE id = $1', [req.params.photoId]);
       if (photo.rows.length === 0) return res.status(404).json({ error: 'Photo not found' });
