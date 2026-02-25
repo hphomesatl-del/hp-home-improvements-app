@@ -23,6 +23,7 @@ const customers = [
   { login: '6170Daffodil',   password: 'Sakr123',     name: 'Freddy & Ashleigh El Sakr',     addressMatch: '6170 Daffodil' },
   { login: '6115Buckeye',    password: 'Martin',      name: 'Ron & Judy Martin',             addressMatch: '6115 Buckeye' },
   { login: '790Clover',      password: 'Rice123',     name: 'Carlton Rice',                  addressMatch: '790 Clover' },
+  { login: '2100Bishop',     password: 'Ruiz123',     name: 'Gerry & Sarah Ruiz',            addressMatch: '2100 Bishop' },
 ];
 
 async function seedCustomers() {

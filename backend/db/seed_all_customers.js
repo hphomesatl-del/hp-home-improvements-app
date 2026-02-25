@@ -22,6 +22,7 @@ const customers = [
   { login: '154Sabal',       password: 'Rainer',     name: 'Rainer',                        addressMatch: '154 Sabal' },
   { login: '511BarrierDunes',password: 'Mondak',     name: 'Mondak',                        addressMatch: '511 Barrier Dunes' },
   { login: '790Clover',      password: 'Rice123',    name: 'Carlton Rice',                  addressMatch: '790 Clover' },
+  { login: '2100Bishop',     password: 'Ruiz123',    name: 'Gerry & Sarah Ruiz',            addressMatch: '2100 Bishop' },
 ];
 
 async function seedCustomers() {
