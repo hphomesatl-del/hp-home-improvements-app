@@ -210,6 +210,7 @@ function InspirationsTab() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [images, setImages] = useState([]);
   const [loadingImages, setLoadingImages] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const loadCategory = (cat) => {
     setSelectedCategory(cat);
@@ -225,7 +226,7 @@ function InspirationsTab() {
 
   return (
     <div className="inspirations-section">
-      <p className="inspirations-intro">Browse our portfolio for design inspiration!</p>
+      <p className="inspirations-intro">Browse our inspiration gallery for your next project!</p>
       <div className="category-grid">
         {categories.map(cat => (
           <button
@@ -247,12 +248,22 @@ function InspirationsTab() {
           ) : (
             <div className="gallery-grid">
               {images.map(img => (
-                <div key={img.id} className="gallery-item">
+                <div key={img.id} className="gallery-item" onClick={() => setSelectedImage(img)} style={{ cursor: 'pointer' }}>
                   <img src={img.url} alt={img.name} loading="lazy" />
                 </div>
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {selectedImage && (
+        <div className="lightbox-overlay" onClick={() => setSelectedImage(null)}>
+          <div className="lightbox-content" onClick={e => e.stopPropagation()}>
+            <button className="lightbox-close" onClick={() => setSelectedImage(null)}>✕</button>
+            <img src={selectedImage.url} alt={selectedImage.name} />
+            {selectedImage.name && <p className="lightbox-name">{selectedImage.name}</p>}
+          </div>
         </div>
       )}
     </div>
