@@ -29,9 +29,8 @@ async function seedProject() {
     const result = await pool.query(
       `INSERT INTO projects (
         id, customer_name, customer_email, customer_phone, address, 
-        start_date, estimated_budget, status, estimate_number, 
-        designer_id, notes
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        start_date, estimated_budget, status, notes
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *`,
       [
         projectId,
@@ -42,8 +41,6 @@ async function seedProject() {
         '2026-03-01', // Estimated start (estimate dated 02/14, expires 03/14)
         47769.45,     // Total budget
         'planning',   // Status
-        estimateNum,
-        null,         // designer_id (TBD)
         'Estimate #26034 - Bathroom remodel (95sf shower + 55sf floor), luxury vinyl flooring (2312sf), new HVAC (5 Ton), interior painting, quarter round trim'
       ]
     );
