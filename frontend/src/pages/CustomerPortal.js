@@ -96,12 +96,26 @@ function CustomerPortal() {
         >
           ✨ Inspirations
         </button>
+        <button
+          className={`portal-tab ${activeTab === 'pictures' ? 'active' : ''}`}
+          onClick={() => setActiveTab('pictures')}
+        >
+          📸 Project Pictures
+        </button>
+        <button
+          className={`portal-tab ${activeTab === 'documents' ? 'active' : ''}`}
+          onClick={() => setActiveTab('documents')}
+        >
+          📄 Plans & Appliances
+        </button>
       </div>
 
       <div className="portal-content">
         {activeTab === 'projects' && <ProjectsTab projects={projects} />}
         {activeTab === 'team' && <TeamTab contractors={contractors} />}
         {activeTab === 'inspirations' && <InspirationsTab />}
+        {activeTab === 'pictures' && <ProjectPicturesTab projects={projects} />}
+        {activeTab === 'documents' && <ProjectDocumentsTab projects={projects} />}
       </div>
 
       <div className="portal-footer">
@@ -239,6 +253,177 @@ function InspirationsTab() {
               ))}
             </div>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProjectPicturesTab({ projects }) {
+  const [photos, setPhotos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const projectId = projects.length > 0 ? projects[0].id : null;
+
+  const headers = () => {
+    const token = localStorage.getItem('token');
+    return { 'Authorization': `Bearer ${token}` };
+  };
+
+  const loadPhotos = () => {
+    if (!projectId) return;
+    setLoading(true);
+    fetch(`${API_URL}/api/projects/${projectId}/pictures`, { headers: headers() })
+      .then(r => r.json())
+      .then(data => { setPhotos(Array.isArray(data) ? data : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { loadPhotos(); }, [projectId]);
+
+  const handleUpload = (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !projectId) return;
+    setUploading(true);
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) formData.append('photos', files[i]);
+    fetch(`${API_URL}/api/projects/${projectId}/pictures`, {
+      method: 'POST', headers: headers(), body: formData
+    })
+      .then(r => r.json())
+      .then(() => { loadPhotos(); setUploading(false); e.target.value = ''; })
+      .catch(() => setUploading(false));
+  };
+
+  const handleDelete = (photoId) => {
+    if (!window.confirm('Delete this photo?')) return;
+    fetch(`${API_URL}/api/projects/${projectId}/pictures/${photoId}`, {
+      method: 'DELETE', headers: headers()
+    }).then(() => loadPhotos());
+  };
+
+  if (!projectId) return <div className="no-projects"><h2>No Project Found</h2></div>;
+
+  return (
+    <div className="project-pictures-section">
+      <div className="upload-area">
+        <label className="upload-btn">
+          {uploading ? '⏳ Uploading...' : '📸 Upload Photos'}
+          <input type="file" multiple accept="image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic"
+            onChange={handleUpload} disabled={uploading} style={{ display: 'none' }} />
+        </label>
+        <span className="upload-hint">JPG, PNG, or HEIC • Up to 15MB each</span>
+      </div>
+      {loading ? <div className="loading">Loading photos...</div> : photos.length === 0 ? (
+        <div className="no-projects"><p>No project pictures uploaded yet. Tap the button above to add photos!</p></div>
+      ) : (
+        <div className="gallery-grid">
+          {photos.map(p => (
+            <div key={p.id} className="gallery-item picture-item">
+              <img
+                src={p.thumbnail_path ? `${API_URL}/uploads/project-pictures/thumbs/${p.thumbnail_path}` : `${API_URL}/uploads/project-pictures/${p.file_path}`}
+                alt={p.file_name} loading="lazy"
+                onClick={() => setSelectedPhoto(p)}
+              />
+              <div className="picture-meta">
+                <span className="picture-date">{new Date(p.uploaded_at).toLocaleDateString()} {new Date(p.uploaded_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
+                <button className="delete-btn-small" onClick={() => handleDelete(p.id)} title="Delete">🗑️</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {selectedPhoto && (
+        <div className="lightbox-overlay" onClick={() => setSelectedPhoto(null)}>
+          <div className="lightbox-content" onClick={e => e.stopPropagation()}>
+            <button className="lightbox-close" onClick={() => setSelectedPhoto(null)}>✕</button>
+            <img src={`${API_URL}/uploads/project-pictures/${selectedPhoto.file_path}`} alt={selectedPhoto.file_name} />
+            <p className="lightbox-name">{selectedPhoto.file_name}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProjectDocumentsTab({ projects }) {
+  const [docs, setDocs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const projectId = projects.length > 0 ? projects[0].id : null;
+
+  const headers = () => {
+    const token = localStorage.getItem('token');
+    return { 'Authorization': `Bearer ${token}` };
+  };
+
+  const loadDocs = () => {
+    if (!projectId) return;
+    setLoading(true);
+    fetch(`${API_URL}/api/projects/${projectId}/documents`, { headers: headers() })
+      .then(r => r.json())
+      .then(data => { setDocs(Array.isArray(data) ? data : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { loadDocs(); }, [projectId]);
+
+  const handleUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file || !projectId) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('document', file);
+    fetch(`${API_URL}/api/projects/${projectId}/documents`, {
+      method: 'POST', headers: headers(), body: formData
+    })
+      .then(r => r.json())
+      .then(() => { loadDocs(); setUploading(false); e.target.value = ''; })
+      .catch(() => setUploading(false));
+  };
+
+  const handleDelete = (docId) => {
+    if (!window.confirm('Delete this document?')) return;
+    fetch(`${API_URL}/api/projects/${projectId}/documents/${docId}`, {
+      method: 'DELETE', headers: headers()
+    }).then(() => loadDocs());
+  };
+
+  const formatSize = (bytes) => {
+    if (!bytes) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  if (!projectId) return <div className="no-projects"><h2>No Project Found</h2></div>;
+
+  return (
+    <div className="project-documents-section">
+      <div className="upload-area">
+        <label className="upload-btn">
+          {uploading ? '⏳ Uploading...' : '📄 Upload PDF'}
+          <input type="file" accept="application/pdf,.pdf" onChange={handleUpload} disabled={uploading} style={{ display: 'none' }} />
+        </label>
+        <span className="upload-hint">PDF files only • Up to 50MB</span>
+      </div>
+      {loading ? <div className="loading">Loading documents...</div> : docs.length === 0 ? (
+        <div className="no-projects"><p>No plans or appliance documents uploaded yet.</p></div>
+      ) : (
+        <div className="documents-list">
+          {docs.map(d => (
+            <div key={d.id} className="document-item">
+              <div className="document-icon">📄</div>
+              <div className="document-info">
+                <a href={`${API_URL}/uploads/project-documents/${d.file_path}`} target="_blank" rel="noopener noreferrer" className="document-name">
+                  {d.file_name}
+                </a>
+                <span className="document-meta">{formatSize(d.file_size)} • {new Date(d.uploaded_at).toLocaleDateString()}</span>
+              </div>
+              <button className="delete-btn-small" onClick={() => handleDelete(d.id)} title="Delete">🗑️</button>
+            </div>
+          ))}
         </div>
       )}
     </div>
