@@ -91,12 +91,6 @@ function CustomerPortal() {
           👷 My Team
         </button>
         <button
-          className={`portal-tab ${activeTab === 'inspirations' ? 'active' : ''}`}
-          onClick={() => setActiveTab('inspirations')}
-        >
-          ✨ Inspirations
-        </button>
-        <button
           className={`portal-tab ${activeTab === 'pictures' ? 'active' : ''}`}
           onClick={() => setActiveTab('pictures')}
         >
@@ -107,6 +101,12 @@ function CustomerPortal() {
           onClick={() => setActiveTab('documents')}
         >
           📄 Plans & Appliances
+        </button>
+        <button
+          className={`portal-tab ${activeTab === 'inspirations' ? 'active' : ''}`}
+          onClick={() => setActiveTab('inspirations')}
+        >
+          ✨ Inspirations
         </button>
       </div>
 
