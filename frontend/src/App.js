@@ -59,11 +59,12 @@ function App() {
               <span className="logo-text">HP Home Improvements</span>
             </Link>
             <nav className="nav">
-              <Link to="/projects">Dashboard</Link>
+              {user?.role === 'admin' && <Link to="/projects">Dashboard</Link>}
               <Link to="/portfolio">Portfolio</Link>
-              <Link to="/projects/new">New Project</Link>
-              <Link to="/team">Team</Link>
+              {user?.role === 'admin' && <Link to="/projects/new">New Project</Link>}
+              {user?.role === 'admin' && <Link to="/team">Team</Link>}
               {user?.role === 'admin' && <Link to="/admin">Owner Dashboard</Link>}
+              {user && user.role !== 'admin' && <Link to="/portal">My Portal</Link>}
               <Link to="/login" className="customer-login-link">{user ? 'Sign Out' : 'Customer Login'}</Link>
             </nav>
           </div>
@@ -76,14 +77,24 @@ function App() {
               user ? <Navigate to="/portal" /> :
               <Navigate to="/login" />
             } />
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin" element={
+              user?.role === 'admin' ? <AdminDashboard /> : <Navigate to={user ? '/portal' : '/login'} />
+            } />
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/projects" element={
-              <Dashboard projects={projects} loading={loading} user={{ role: 'admin' }} />
+              user?.role === 'admin'
+                ? <Dashboard projects={projects} loading={loading} user={{ role: 'admin' }} />
+                : <Navigate to={user ? '/portal' : '/login'} />
             } />
-            <Route path="/projects/:id" element={<ProjectDetail />} />
-            <Route path="/projects/new" element={<NewProject />} />
-            <Route path="/team" element={<TeamMembers />} />
+            <Route path="/projects/:id" element={
+              user?.role === 'admin' ? <ProjectDetail /> : <Navigate to={user ? '/portal' : '/login'} />
+            } />
+            <Route path="/projects/new" element={
+              user?.role === 'admin' ? <NewProject /> : <Navigate to={user ? '/portal' : '/login'} />
+            } />
+            <Route path="/team" element={
+              user?.role === 'admin' ? <TeamMembers /> : <Navigate to={user ? '/portal' : '/login'} />
+            } />
             <Route path="/login" element={<Login />} />
             <Route path="/inspirations" element={<Inspirations />} />
             <Route path="/portal" element={<CustomerPortal />} />
