@@ -13,6 +13,11 @@ module.exports = (pool) => {
     try {
       const { email, password, name, role } = req.body;
 
+      // Validate password length (minimum 6 characters)
+      if (!password || password.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters' });
+      }
+
       // Check if user exists
       const existing = await pool.query(
         'SELECT id FROM users WHERE email = $1',

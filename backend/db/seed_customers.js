@@ -16,11 +16,12 @@ const pool = new Pool({
 });
 
 const customers = [
-  { login: '2361Ewing',      password: 'Rachford',    name: 'Matt & Meghan Rachford',      addressMatch: '2361 Ewing' },
-  { login: '4680Winding',    password: 'Davis',        name: 'Kelly Davis',                  addressMatch: '4680 Winding' },
-  { login: '1057Monticello', password: 'Goethals',     name: 'Darinda & Micheal Goethals',   addressMatch: '1057 Monticello' },
-  { login: '6170Daffodil',   password: 'ElSakr',       name: 'Freddy & Ashleigh El Sakr',    addressMatch: '6170 Daffodil' },
-  { login: '6115Buckeye',    password: 'Martin',       name: 'Ron & Judy Martin',            addressMatch: '6115 Buckeye' },
+  { login: '1620LazyRiver',  password: 'Rogg123',     name: 'Carla Rogg',                   addressMatch: '1620 Lazy River' },
+  { login: '2361Ewing',      password: 'Rachford',    name: 'Matt & Meghan Rachford',       addressMatch: '2361 Ewing' },
+  { login: '4680Winding',    password: 'Davis123',    name: 'Kelly Davis',                   addressMatch: '4680 Winding' },
+  { login: '1057Monticello', password: 'Goethals',    name: 'Darinda & Micheal Goethals',    addressMatch: '1057 Monticello' },
+  { login: '6170Daffodil',   password: 'Sakr123',     name: 'Freddy & Ashleigh El Sakr',     addressMatch: '6170 Daffodil' },
+  { login: '6115Buckeye',    password: 'Martin',      name: 'Ron & Judy Martin',             addressMatch: '6115 Buckeye' },
 ];
 
 async function seedCustomers() {
