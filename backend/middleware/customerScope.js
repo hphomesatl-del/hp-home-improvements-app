@@ -1,13 +1,17 @@
 const { authenticateToken } = require('./auth');
 
 /**
- * Optional auth: sets user info if token present, defaults to admin if not.
- * Used on routes that serve both admin (no-auth legacy) and customer (auth required).
+ * Optional auth: sets user info if token present, guest if not.
+ * Prevents unauthorized access by never defaulting to admin.
+ * Routes must explicitly check authentication before allowing sensitive actions.
  */
 function optionalAuth(req, res, next) {
   const authHeader = req.headers['authorization'];
   if (!authHeader) {
-    req.userRole = 'admin';
+    // No token provided — user is not authenticated
+    req.userId = null;
+    req.userEmail = null;
+    req.userRole = 'guest'; // Changed from 'admin' to 'guest'
     return next();
   }
   return authenticateToken(req, res, next);

@@ -4,11 +4,34 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const { Pool } = require('pg');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 
+// CORS: Restrict to frontend domains only
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3000', 'https://frontend-gold-ten-70.vercel.app'];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
+
+// Rate limiting for auth endpoints (5 attempts per 15 minutes)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: 'Too many login attempts, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for health checks
+    return req.path === '/health';
+  }
+});
+
 // Middleware
-app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -33,7 +56,7 @@ app.use('/api/projects', require('./routes/projects')(pool));
 app.use('/api/phases', require('./routes/phases')(pool));
 app.use('/api/decisions', require('./routes/decisions')(pool));
 app.use('/api/contractors', require('./routes/contractors')(pool));
-app.use('/api/auth', require('./routes/auth')(pool));
+app.use('/api/auth', authLimiter, require('./routes/auth')(pool));
 app.use('/api/inspirations', require('./routes/inspirations')(pool));
 app.use('/api/projects', require('./routes/plans')(pool));
 app.use('/api/admin', require('./routes/admin')(pool));
