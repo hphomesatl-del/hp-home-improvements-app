@@ -37,9 +37,12 @@ app.use('/api/auth', require('./routes/auth')(pool));
 app.use('/api/inspirations', require('./routes/inspirations')(pool));
 app.use('/api/projects', require('./routes/plans')(pool));
 app.use('/api/admin', require('./routes/admin')(pool));
+app.use('/api/projects', require('./routes/customerPhotos')(pool));
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads/customer-photos', express.static(path.join(__dirname, 'uploads', 'customer-photos')));
+app.use('/uploads/customer-photos/thumbs', express.static(path.join(__dirname, 'uploads', 'customer-photos', 'thumbs')));
 
 // Health check
 app.get('/health', (req, res) => {
