@@ -35,7 +35,8 @@ const VENDORS_BY_CATEGORY = {
     { name: 'Stone Showcase', address: '1785 Enterprise Dr Suite B, Buford, GA 30518', phone: '678-546-6166', fax: '678-546-1445', hours: 'Mon-Fri 9am-5pm, Sat 10am-1pm' },
     { name: 'Georgian Stone Corp', address: '3045 Business Park Drive Suite A, Norcross, GA 30071', contact: 'Jim - Stone Solutions Rep', note: 'Granite / Stone Fabricator' },
     { name: 'Keystone Granite', contact: 'Kevin & Allison Rice', phone: '706-206-7439', note: 'Quartz/Granite/Soap Stone' },
-    { name: 'Luxury Landscape Supply', address: '185 Park Access Drive, Lawrenceville, GA 30046', contact: 'Michael Cole', phone: '770-513-3773' }
+    { name: 'Luxury Landscape Supply', address: '185 Park Access Drive, Lawrenceville, GA 30046', contact: 'Michael Cole', phone: '770-513-3773' },
+    { name: 'Walter Stone Creations', note: 'Stone Countertops' }
   ],
   'Windows & Doors': [
     { name: 'PMC Materials', address: 'Lawrenceville' }
