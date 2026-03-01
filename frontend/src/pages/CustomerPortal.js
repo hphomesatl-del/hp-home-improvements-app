@@ -10,13 +10,7 @@ function CustomerPortal() {
   const [activeTab, setActiveTab] = useState('projects');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
-
-  const getHeaders = () => {
-    const token = localStorage.getItem('token');
-    return { 'Authorization': `Bearer ${token}` };
-  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -27,7 +21,6 @@ function CustomerPortal() {
       return;
     }
 
-    setUser(JSON.parse(userData));
     const headers = { 'Authorization': `Bearer ${token}` };
 
     // Fetch projects and contractors in parallel

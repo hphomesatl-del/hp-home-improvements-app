@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 function Inspirations() {
   const [category, setCategory] = useState('kitchens');
@@ -44,11 +44,7 @@ function Inspirations() {
     fetchThumbnails();
   }, [apiUrl]);
 
-  useEffect(() => {
-    fetchImages(category);
-  }, [category]);
-
-  const fetchImages = async (cat) => {
+  const fetchImages = useCallback(async (cat) => {
     setLoading(true);
     setCurrentIndex(0);
     try {
@@ -60,7 +56,11 @@ function Inspirations() {
       setImages([]);
     }
     setLoading(false);
-  };
+  }, [apiUrl]);
+
+  useEffect(() => {
+    fetchImages(category);
+  }, [category, fetchImages]);
 
   useEffect(() => {
     if (images.length === 0) return;
