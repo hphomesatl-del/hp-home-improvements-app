@@ -51,22 +51,33 @@ function App() {
     <Router>
       <div className="app">
         <header className="header">
-          <div className="header-top">
-            <span className="phone-number">📞 (404) 931-3686</span>
-          </div>
           <div className="header-content">
             <Link to="/projects" className="logo">
               <img src="/logo.jpg" alt="HP Home Improvements" className="logo-image" />
               <span className="logo-text">HP Home Improvements</span>
             </Link>
             <nav className="nav">
-              {user?.role === 'admin' && <Link to="/projects">Dashboard</Link>}
-              <Link to="/portfolio">Portfolio</Link>
-              <Link to="/vendors">Vendors</Link>
-              {user?.role === 'admin' && <Link to="/projects/new">New Project</Link>}
-              {user?.role === 'admin' && <Link to="/team">Team</Link>}
-              {user?.role === 'admin' && <Link to="/admin">Owner Dashboard</Link>}
-              {user && user.role !== 'admin' && <Link to="/portal">My Portal</Link>}
+              {user?.role === 'admin' && (
+                <>
+                  <Link to="/projects">Dashboard</Link>
+                  <Link to="/projects/new">New Project</Link>
+                  <Link to="/team">Team</Link>
+                  <Link to="/admin">Owner Dashboard</Link>
+                </>
+              )}
+              {user && user.role !== 'admin' && (
+                <>
+                  <Link to="/portal">My Portal</Link>
+                  <Link to="/inspirations">Inspirations</Link>
+                  <Link to="/vendors">Vendors</Link>
+                </>
+              )}
+              {!user && (
+                <>
+                  <Link to="/inspirations">Inspirations</Link>
+                  <Link to="/vendors">Vendors</Link>
+                </>
+              )}
               <Link to="/login" className="customer-login-link">{user ? 'Sign Out' : 'Customer Login'}</Link>
             </nav>
           </div>

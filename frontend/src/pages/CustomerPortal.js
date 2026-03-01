@@ -11,6 +11,9 @@ function CustomerPortal() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const [weather, setWeather] = useState(null);
+  const [weatherTomorrow, setWeatherTomorrow] = useState(null);
+  const [time, setTime] = useState(new Date());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,6 +54,33 @@ function CustomerPortal() {
       });
   }, [navigate]);
 
+  // Fetch weather for Georgia (Today + Tomorrow)
+  useEffect(() => {
+    fetch('https://api.weather.gov/points/33.8,-84.4')
+      .then(res => res.json())
+      .then(data => {
+        if (data.properties?.forecast) {
+          return fetch(data.properties.forecast);
+        }
+      })
+      .then(res => res?.json())
+      .then(data => {
+        if (data?.properties?.periods?.length >= 2) {
+          setWeather(data.properties.periods[0]);
+          setWeatherTomorrow(data.properties.periods[1]);
+        } else if (data?.properties?.periods?.length > 0) {
+          setWeather(data.properties.periods[0]);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -67,9 +97,28 @@ function CustomerPortal() {
           <h1>Welcome, {user?.name || 'Customer'}</h1>
           <p className="portal-subtitle">HP Home Improvements Customer Portal</p>
         </div>
-        <button className="btn logout-btn" onClick={handleLogout}>
-          Sign Out
-        </button>
+        <div className="portal-header-right">
+          <div className="time-weather">
+            <div className="time-display">
+              🕐 {time.toLocaleTimeString()}
+            </div>
+            {weather && (
+              <div className="weather-section">
+                <div className="weather-display">
+                  <strong>Today:</strong> {weather.temperature}°F • {weather.shortForecast}
+                </div>
+                {weatherTomorrow && (
+                  <div className="weather-display tomorrow">
+                    <strong>Tomorrow:</strong> {weatherTomorrow.temperature}°F • {weatherTomorrow.shortForecast}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <button className="btn logout-btn" onClick={handleLogout}>
+            Sign Out
+          </button>
+        </div>
       </div>
 
       <div className="portal-tabs">
@@ -110,7 +159,7 @@ function CustomerPortal() {
         {activeTab === 'team' && <TeamTab contractors={contractors} />}
         {activeTab === 'inspirations' && <InspirationsTab />}
         {activeTab === 'pictures' && <ProjectPicturesTab projects={projects} />}
-        {activeTab === 'documents' && <ProjectDocumentsTab projects={projects} />}
+        {activeTab === 'documents' && <ProjectDocumentsTab projects={projects} user={user} />}
       </div>
 
       <div className="portal-footer">
@@ -160,27 +209,119 @@ function ProjectsTab({ projects }) {
 }
 
 function TeamTab({ contractors }) {
-  if (contractors.length === 0) {
-    return (
-      <div className="no-projects">
-        <h2>No Team Members Assigned</h2>
-        <p>Your project team will appear here once contractors are assigned.</p>
-      </div>
-    );
-  }
+  // Full HP Home Improvements team
+  const hpTeam = [
+    {
+      id: 'greg',
+      name: 'Greg Hutzell',
+      trade: 'Owner & General Contractor',
+      company: 'HP Home Improvements',
+      phone: null,
+      email: null
+    },
+    {
+      id: 'carolyn',
+      name: 'Carolyn Perry',
+      trade: 'Bookkeeping',
+      company: 'HP Home Improvements',
+      phone: '(470) 617-3820',
+      email: null
+    },
+    {
+      id: 'nick',
+      name: 'Nick Stipetich',
+      trade: 'Project Management',
+      company: 'HP Home Improvements',
+      phone: '(470) 617-3810',
+      email: null
+    },
+    {
+      id: 'fidel',
+      name: 'Fidel Espinal',
+      trade: 'Lead Carpenter',
+      company: 'HP Home Improvements',
+      phone: null,
+      email: null
+    },
+    {
+      id: 'jose',
+      name: 'Jose Montdragon',
+      trade: 'Painting',
+      company: 'HP Home Improvements',
+      phone: null,
+      email: null
+    },
+    {
+      id: 'hector',
+      name: 'Hector Gonzales',
+      trade: 'Plumbing & HVAC',
+      company: 'G & P Plumbing and HVAC',
+      phone: null,
+      email: null
+    },
+    {
+      id: 'axel',
+      name: 'Axel Sorzano',
+      trade: 'Electrical',
+      company: 'Amen Electric',
+      phone: null,
+      email: null
+    },
+    {
+      id: 'andres',
+      name: 'Andres',
+      trade: 'Tile & Stone',
+      company: 'HP Home Improvements',
+      phone: null,
+      email: null
+    },
+    {
+      id: 'jorge',
+      name: 'Jorge',
+      trade: 'Drywall Finishing',
+      company: 'HP Home Improvements',
+      phone: null,
+      email: null
+    },
+    {
+      id: 'luciano',
+      name: 'Luciano Martinez',
+      trade: 'Flooring',
+      company: 'Fast Flooring & Carpeting',
+      phone: null,
+      email: null
+    },
+    {
+      id: 'teresa',
+      name: 'Teresa Hamilton',
+      trade: 'Design',
+      company: 'TLHD',
+      phone: '(678) 571-7533',
+      email: null
+    },
+    {
+      id: 'daniel',
+      name: 'Daniel Wheeler',
+      trade: 'Cabinets & Woodwork',
+      company: 'Wheeler Woodworks',
+      phone: '(770) 307-1684',
+      email: null
+    }
+  ];
 
   return (
     <div className="team-grid">
-      {contractors.map(c => (
-        <div key={c.id} className="team-card">
+      {hpTeam.map(member => (
+        <div key={member.id} className="team-card">
           <div className="team-card-header">
-            <h3>{c.name}</h3>
-            <span className="trade-badge">{c.trade}</span>
+            <h3>{member.name}</h3>
+            <span className="trade-badge">{member.trade}</span>
           </div>
-          {c.company && <p className="team-company">{c.company}</p>}
+          {member.company && <p className="team-company">{member.company}</p>}
           <div className="team-contact">
-            {c.phone && <p>📞 {c.phone}</p>}
-            {c.email && <p>✉️ {c.email}</p>}
+            {member.phone && <p>📞 {member.phone}</p>}
+            {member.email && <p>✉️ {member.email}</p>}
+            {!member.phone && !member.email && <p className="team-contact-note">Available through main office</p>}
           </div>
         </div>
       ))}
@@ -353,11 +494,12 @@ function ProjectPicturesTab({ projects }) {
   );
 }
 
-function ProjectDocumentsTab({ projects }) {
+function ProjectDocumentsTab({ projects, user }) {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const projectId = projects.length > 0 ? projects[0].id : null;
+  const isOwner = user?.role === 'admin';
 
   const headers = () => {
     const token = localStorage.getItem('token');
@@ -376,11 +518,11 @@ function ProjectDocumentsTab({ projects }) {
   useEffect(() => { loadDocs(); }, [projectId]);
 
   const handleUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file || !projectId) return;
+    const files = e.target.files;
+    if (!files || files.length === 0 || !projectId) return;
     setUploading(true);
     const formData = new FormData();
-    formData.append('document', file);
+    for (let i = 0; i < files.length; i++) formData.append('document', files[i]);
     fetch(`${API_URL}/api/projects/${projectId}/documents`, {
       method: 'POST', headers: headers(), body: formData
     })
@@ -396,6 +538,13 @@ function ProjectDocumentsTab({ projects }) {
     }).then(() => loadDocs());
   };
 
+  const handleDownload = (doc) => {
+    const link = document.createElement('a');
+    link.href = `${API_URL}/uploads/project-documents/${doc.file_path}`;
+    link.download = doc.file_name;
+    link.click();
+  };
+
   const formatSize = (bytes) => {
     if (!bytes) return '';
     if (bytes < 1024) return bytes + ' B';
@@ -409,25 +558,30 @@ function ProjectDocumentsTab({ projects }) {
     <div className="project-documents-section">
       <div className="upload-area">
         <label className="upload-btn">
-          {uploading ? '⏳ Uploading...' : '📄 Upload PDF'}
-          <input type="file" accept="application/pdf,.pdf" onChange={handleUpload} disabled={uploading} style={{ display: 'none' }} />
+          {uploading ? '⏳ Uploading...' : '📄 Upload Plans & Specs'}
+          <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx" onChange={handleUpload} disabled={uploading} multiple style={{ display: 'none' }} />
         </label>
-        <span className="upload-hint">PDF files only • Up to 50MB</span>
+        <span className="upload-hint">PDF, Word, Excel, or Images • Up to 50MB each</span>
       </div>
       {loading ? <div className="loading">Loading documents...</div> : docs.length === 0 ? (
-        <div className="no-projects"><p>No plans or appliance documents uploaded yet.</p></div>
+        <div className="no-projects"><p>No plans or appliance documents uploaded yet. Upload floor plans, appliance specs, and project details here.</p></div>
       ) : (
         <div className="documents-list">
           {docs.map(d => (
             <div key={d.id} className="document-item">
               <div className="document-icon">📄</div>
               <div className="document-info">
-                <a href={`${API_URL}/uploads/project-documents/${d.file_path}`} target="_blank" rel="noopener noreferrer" className="document-name">
-                  {d.file_name}
-                </a>
+                <p className="document-name" onClick={() => handleDownload(d)} style={{cursor: 'pointer'}}>
+                  📥 {d.file_name}
+                </p>
                 <span className="document-meta">{formatSize(d.file_size)} • {new Date(d.uploaded_at).toLocaleDateString()}</span>
               </div>
-              <button className="delete-btn-small" onClick={() => handleDelete(d.id)} title="Delete">🗑️</button>
+              <div className="document-actions">
+                <button className="download-btn" onClick={() => handleDownload(d)} title="Download">⬇️</button>
+                {isOwner && (
+                  <button className="delete-btn-small" onClick={() => handleDelete(d.id)} title="Delete (Owner only)">🗑️</button>
+                )}
+              </div>
             </div>
           ))}
         </div>

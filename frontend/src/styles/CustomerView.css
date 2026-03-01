@@ -66,6 +66,30 @@
   font-size: 1rem;
 }
 
+.completed-count {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: #e8f5e9;
+  border-radius: 20px;
+  color: #2e7d32;
+  font-size: 1rem;
+}
+
+.completed-cost {
+  font-weight: 700 !important;
+  color: #2e7d32 !important;
+  font-size: 1.1rem !important;
+}
+
+.completion-date {
+  background-color: #e3f2fd;
+  border-radius: 20px;
+  color: #1976d2;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+  font-size: 1rem;
+}
+
 .info-subtitle {
   font-size: 0.85rem;
   color: #999;
@@ -161,7 +185,18 @@
 .phase-duration {
   color: #999;
   font-size: 0.85rem;
-  margin: 0;
+  margin: 0.25rem 0;
+}
+
+.phase-cost {
+  color: #28a745;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0.5rem 0 0 0;
+  padding: 0.5rem 0.75rem;
+  background: #f0f8f0;
+  border-radius: 4px;
+  display: inline-block;
 }
 
 .phase-status {

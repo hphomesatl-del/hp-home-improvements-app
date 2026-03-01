@@ -276,6 +276,15 @@ function CustomerView() {
     }
   });
 
+  // Calculate costs
+  const totalBudget = parseFloat(project.estimated_budget || 0);
+  const costPerPhase = phases.length > 0 ? totalBudget / phases.length : 0;
+  const completedPhases = phases.filter(p => p.status === 'completed');
+  const completedCost = completedPhases.length * costPerPhase;
+  const currentPhase = phases.find(p => p.status === 'in-progress') || phases[phases.length - 1];
+  const currentPhaseIndex = phases.findIndex(p => p.id === currentPhase?.id);
+  const cumulativeCostBefore = currentPhaseIndex * costPerPhase;
+
   return (
     <div className="customer-view">
       {isPortalView && (
@@ -304,9 +313,27 @@ function CustomerView() {
         </div>
 
         <div className="info-card">
-          <h3>Project Status</h3>
-          <p className="info-value status-pill">{project.status}</p>
-          <p className="info-subtitle">Current Phase</p>
+          <h3>Completed</h3>
+          <p className="info-value completed-count">{completedPhases.length} of {phases.length}</p>
+          <p className="info-subtitle completed-cost">${completedCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+        </div>
+
+        <div className="info-card">
+          <h3>Estimated Completion</h3>
+          <p className="info-value completion-date">
+            {project.end_date 
+              ? new Date(project.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+              : (phases.length > 0 && project.start_date
+                ? (() => {
+                    const startDate = new Date(project.start_date);
+                    const lastPhase = phases[phases.length - 1];
+                    const estimatedDays = lastPhase.planned_start_day + (lastPhase.planned_duration_days || 0) - 1;
+                    const completionDate = new Date(startDate.getTime() + estimatedDays * 24 * 60 * 60 * 1000);
+                    return completionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                  })()
+                : 'TBD')}
+          </p>
+          <p className="info-subtitle">Projected Date</p>
         </div>
       </div>
 
@@ -333,6 +360,7 @@ function CustomerView() {
                 <h4>{phase.name}</h4>
                 <p className="phase-days">Days {phase.planned_start_day}-{phase.planned_start_day + (phase.planned_duration_days || 1) - 1}</p>
                 <p className="phase-duration">{phase.planned_duration_days} day(s)</p>
+                <p className="phase-cost">${costPerPhase.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 <PhasePhotos photos={photosByPhase[phase.id]} onView={setLightboxPhoto} />
               </div>
               <div className="phase-status">{phase.status || 'planned'}</div>
