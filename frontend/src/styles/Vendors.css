@@ -1,0 +1,112 @@
+.vendors-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.vendors-page h1 {
+  color: #2c5aa0;
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+}
+
+.vendors-subtitle {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.trade-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.trade-tab {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #ddd;
+  background: white;
+  color: #333;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.trade-tab:hover {
+  border-color: #2c5aa0;
+  color: #2c5aa0;
+}
+
+.trade-tab.active {
+  background: #2c5aa0;
+  color: white;
+  border-color: #2c5aa0;
+}
+
+.vendors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.vendor-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.vendor-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.vendor-card h3 {
+  color: #2c5aa0;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.vendor-subtitle {
+  color: #ffc107;
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem 0;
+  font-weight: 600;
+}
+
+.vendor-detail {
+  color: #555;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.vendor-detail strong {
+  color: #333;
+  display: inline-block;
+  min-width: 70px;
+}
+
+.vendor-detail a {
+  color: #2c5aa0;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.vendor-detail a:hover {
+  text-decoration: underline;
+}
+
+.vendor-note {
+  color: #999;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+  font-style: italic;
+}

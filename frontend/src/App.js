@@ -13,6 +13,7 @@ import CustomerPortal from './pages/CustomerPortal';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import Inspirations from './pages/Inspirations';
+import Vendors from './pages/Vendors';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -61,6 +62,7 @@ function App() {
             <nav className="nav">
               {user?.role === 'admin' && <Link to="/projects">Dashboard</Link>}
               <Link to="/portfolio">Portfolio</Link>
+              <Link to="/vendors">Vendors</Link>
               {user?.role === 'admin' && <Link to="/projects/new">New Project</Link>}
               {user?.role === 'admin' && <Link to="/team">Team</Link>}
               {user?.role === 'admin' && <Link to="/admin">Owner Dashboard</Link>}
@@ -81,6 +83,7 @@ function App() {
               user?.role === 'admin' ? <AdminDashboard /> : <Navigate to={user ? '/portal' : '/login'} />
             } />
             <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/vendors" element={<Vendors />} />
             <Route path="/projects" element={
               user?.role === 'admin'
                 ? <Dashboard projects={projects} loading={loading} user={{ role: 'admin' }} />
