@@ -73,13 +73,20 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Routes
+// Routes - with logging
+console.log('Loading routes...');
 app.use('/api/customers', require('./routes/customers')(pool));
+console.log('✅ Customers route loaded');
 app.use('/api/projects', require('./routes/projects')(pool));
+console.log('✅ Projects route loaded');
 app.use('/api/phases', require('./routes/phases')(pool));
+console.log('✅ Phases route loaded');
 app.use('/api/decisions', require('./routes/decisions')(pool));
+console.log('✅ Decisions route loaded');
 app.use('/api/contractors', require('./routes/contractors')(pool));
-app.use('/api/auth', require('./routes/auth')(pool)); // NO rate limiter - testing
+console.log('✅ Contractors route loaded');
+app.use('/api/auth', require('./routes/auth')(pool));
+console.log('✅ Auth route loaded');
 app.use('/api/inspirations', require('./routes/inspirations')(pool));
 app.use('/api/projects', require('./routes/plans')(pool));
 app.use('/api/admin', require('./routes/admin')(pool));
