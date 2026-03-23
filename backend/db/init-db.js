@@ -9,16 +9,22 @@ module.exports = async (pool) => {
   try {
     console.log('🔍 Initializing database...');
 
+    // Test connection first
+    await pool.query('SELECT NOW()');
+    console.log('✅ Database connection successful');
+
     // Create users table if not exists
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY,
-        email VARCHAR(255) UNIQUE,
-        username VARCHAR(255) UNIQUE,
+        email VARCHAR(255),
+        username VARCHAR(255),
         password_hash VARCHAR(255),
         name VARCHAR(255),
         role VARCHAR(50) DEFAULT 'customer',
-        "createdAt" TIMESTAMP DEFAULT NOW()
+        "createdAt" TIMESTAMP DEFAULT NOW(),
+        UNIQUE(email),
+        UNIQUE(username)
       )
     `);
     console.log('✅ Users table created/verified');

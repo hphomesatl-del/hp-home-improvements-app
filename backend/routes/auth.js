@@ -101,7 +101,8 @@ module.exports = (pool) => {
         token
       });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error('Login error:', err);
+      res.status(500).json({ error: err.message || 'Login failed' });
     }
   });
 
