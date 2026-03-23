@@ -3,7 +3,7 @@ services:
     name: hp-home-improvements-backend
     runtime: node
     plan: free
-    buildCommand: cd backend && npm install
+    buildCommand: cd backend && npm ci --only=production
     startCommand: cd backend && node server.js
     envVars:
       - key: NODE_ENV
@@ -22,7 +22,5 @@ services:
         value: hp_home_improvements
       - key: DB_PORT
         value: "5432"
-
-  - type: pserv
-    name: hp-home-improvements-db
-    plan: free
+      - key: DB_HOST
+        value: localhost
