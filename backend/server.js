@@ -18,18 +18,8 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting for auth endpoints (5 attempts per 15 minutes)
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: 'Too many login attempts, please try again later',
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req) => {
-    // Skip rate limiting for health checks
-    return req.path === '/health';
-  }
-});
+// DISABLED: Rate limiting for auth endpoints
+// const authLimiter = rateLimit({...});
 
 // Middleware
 app.use(bodyParser.json());
