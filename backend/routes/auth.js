@@ -65,38 +65,36 @@ module.exports = (pool) => {
         return res.status(400).json({ error: 'Missing credentials' });
       }
 
-      // Find user by email OR username
-      const result = await pool.query(
-        'SELECT id, email, username, password_hash, name, role FROM users WHERE email = $1 OR username = $1',
-        [loginField]
-      );
+      // HARDCODED logins for production (database optional)
+      const validLogins = {
+        '790Clover': { password: 'Rice123', name: 'Carlton Rice', role: 'customer' },
+        '2100Bishop': { password: 'Ruiz123', name: 'Gerry & Sarah Ruiz', role: 'customer' },
+        'rachford': { password: 'Rachford123', name: 'Matt & Meghan Rachford', role: 'customer' },
+        'martin': { password: 'Martin123', name: 'Ron & Judy Martin', role: 'customer' },
+        'goethals': { password: 'Goethals123', name: 'Darinda & Micheal Goethals', role: 'customer' },
+        'kelly': { password: 'Kelly123', name: 'Kelly Davis', role: 'customer' }
+      };
 
-      if (result.rows.length === 0) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-
-      const user = result.rows[0];
-
-      // Check password
-      const validPassword = await bcrypt.compare(password, user.password_hash);
-
-      if (!validPassword) {
+      const validUser = validLogins[loginField];
+      
+      if (!validUser || validUser.password !== password) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
       // Generate token
+      const { v4: uuidv4 } = require('uuid');
       const token = jwt.sign(
-        { userId: user.id, email: user.email, role: user.role },
+        { userId: uuidv4(), email: loginField + '@hphomeimprovements.com', role: validUser.role },
         JWT_SECRET,
         { expiresIn: '7d' }
       );
 
       res.json({
         user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role
+          id: uuidv4(),
+          email: loginField + '@hphomeimprovements.com',
+          name: validUser.name,
+          role: validUser.role
         },
         token
       });
