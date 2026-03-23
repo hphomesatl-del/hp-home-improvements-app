@@ -100,7 +100,8 @@ module.exports = (pool) => {
       });
     } catch (err) {
       console.error('Login error:', err);
-      res.status(500).json({ error: err.message || 'Login failed' });
+      console.error('Stack:', err.stack);
+      res.status(500).json({ error: err.message || err.toString() || 'Login failed', stack: err.stack });
     }
   });
 
