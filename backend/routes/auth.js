@@ -58,12 +58,17 @@ module.exports = (pool) => {
   // POST login
   router.post('/login', async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, username, password } = req.body;
+      const loginField = username || email;
 
-      // Find user
+      if (!loginField || !password) {
+        return res.status(400).json({ error: 'Missing credentials' });
+      }
+
+      // Find user by email OR username
       const result = await pool.query(
-        'SELECT id, email, password_hash, name, role FROM users WHERE email = $1',
-        [email]
+        'SELECT id, email, username, password_hash, name, role FROM users WHERE email = $1 OR username = $1',
+        [loginField]
       );
 
       if (result.rows.length === 0) {

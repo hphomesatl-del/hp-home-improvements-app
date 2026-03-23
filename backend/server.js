@@ -54,6 +54,10 @@ pool.on('error', (err) => {
   console.error('Unexpected error on idle client', err);
 });
 
+// Initialize database on startup
+const initDB = require('./db/init-db');
+initDB(pool).catch(err => console.error('DB init failed:', err));
+
 // Make pool available to routes
 app.locals.pool = pool;
 
