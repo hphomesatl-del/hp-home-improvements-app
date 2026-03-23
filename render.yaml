@@ -25,4 +25,3 @@ services:
     name: hp-home-improvements-db
     plan: free
     ipAllowList: []
-    postgresMajorVersion: 15
