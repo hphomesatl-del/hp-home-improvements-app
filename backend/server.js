@@ -57,7 +57,17 @@ pool.on('error', (err) => {
 // Make pool available to routes
 app.locals.pool = pool;
 
+// Health check - MUST BE BEFORE OTHER ROUTES
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 // Routes
+app.use('/api/customers', require('./routes/customers')(pool));
 app.use('/api/projects', require('./routes/projects')(pool));
 app.use('/api/phases', require('./routes/phases')(pool));
 app.use('/api/decisions', require('./routes/decisions')(pool));
@@ -76,11 +86,6 @@ app.use('/uploads/customer-photos/thumbs', express.static(path.join(__dirname, '
 app.use('/uploads/project-pictures', express.static(path.join(__dirname, 'uploads', 'project-pictures')));
 app.use('/uploads/project-pictures/thumbs', express.static(path.join(__dirname, 'uploads', 'project-pictures', 'thumbs')));
 app.use('/uploads/project-documents', express.static(path.join(__dirname, 'uploads', 'project-documents')));
-
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
 
 // 404 handler
 app.use((req, res) => {
