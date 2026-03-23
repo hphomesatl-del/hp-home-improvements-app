@@ -56,6 +56,19 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Test endpoint - simple hardcoded response
+app.get('/api/test', (req, res) => {
+  res.json({
+    message: 'API is working!',
+    customers: [
+      { username: '790Clover', password: 'Rice123', name: 'Carlton Rice' },
+      { username: '2100Bishop', password: 'Ruiz123', name: 'Gerry & Sarah Ruiz' }
+    ],
+    loginUrl: '/api/auth/login',
+    status: 'production'
+  });
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
