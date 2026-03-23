@@ -76,7 +76,7 @@ app.use('/api/projects', require('./routes/projects')(pool));
 app.use('/api/phases', require('./routes/phases')(pool));
 app.use('/api/decisions', require('./routes/decisions')(pool));
 app.use('/api/contractors', require('./routes/contractors')(pool));
-app.use('/api/auth', authLimiter, require('./routes/auth')(pool));
+app.use('/api/auth', require('./routes/auth')(pool)); // NO rate limiter - testing
 app.use('/api/inspirations', require('./routes/inspirations')(pool));
 app.use('/api/projects', require('./routes/plans')(pool));
 app.use('/api/admin', require('./routes/admin')(pool));
