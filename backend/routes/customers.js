@@ -2,17 +2,40 @@ module.exports = (pool) => {
   const express = require('express');
   const router = express.Router();
 
-  // GET all customers
-  router.get('/', async (req, res) => {
-    try {
-      const result = await pool.query(
-        'SELECT id, name, email, phone, address, "projectName", "estimateNumber", budget, "startDate", "endDate", scope, status, "createdAt" FROM customers ORDER BY "createdAt" DESC'
-      );
-      res.json(result.rows);
-    } catch (err) {
-      console.error('Error fetching customers:', err);
-      res.status(500).json({ error: err.message });
-    }
+  // GET all customers - HARDCODED (no database needed)
+  router.get('/', (req, res) => {
+    res.json([
+      {
+        id: "03ddbb8d-79d7-4f0b-a2d5-38f792a34506",
+        name: "Matt & Meghan Rachford",
+        email: "rachford@hphomeimprovements.com",
+        phone: "(404) 931-3686",
+        address: "2361 Ewing Drive NE, Brookhaven, GA 30319",
+        "projectName": "Kitchen & Exterior Renovation",
+        "estimateNumber": "#25121",
+        budget: 86772.71,
+        "startDate": "2026-02-23",
+        "endDate": "2026-05-02",
+        scope: "Kitchen renovation + Exterior bump out addition + 7 new windows + Hardwood flooring + Full MEP work",
+        status: "IN PROGRESS",
+        "createdAt": "2026-02-19"
+      },
+      {
+        id: "eb3d3b49-967c-480a-9b89-c2ed629c6ac1",
+        name: "Ron & Judy Martin",
+        email: "martin@hphomeimprovements.com",
+        phone: "(404) 931-3686",
+        address: "6115 Buckeye Trail, Loganville, GA 30053",
+        "projectName": "Kitchen Remodel",
+        "estimateNumber": "#25205",
+        budget: 167268.25,
+        "startDate": "2025-12-27",
+        "endDate": "2026-02-20",
+        scope: "Kitchen addition, full bathroom, powder room, concrete ramp, stairs, all MEP work",
+        status: "IN PROGRESS",
+        "createdAt": "2026-02-19"
+      }
+    ]);
   });
 
   // GET single customer by ID

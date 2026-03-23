@@ -4,6 +4,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 module.exports = (pool) => {
+  // Test pool connection
+  pool.query('SELECT 1 as test')
+    .then(() => console.log('✅ Auth route pool connected'))
+    .catch(err => console.log('❌ Auth route pool failed:', err.message));
   const router = express.Router();
 
   const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
