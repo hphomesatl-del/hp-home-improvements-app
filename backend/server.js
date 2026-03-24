@@ -69,8 +69,22 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+app.get('/health', async (req, res) => {
+  try {
+    // Test database connection
+    await pool.query('SELECT NOW()');
+    res.json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      database: 'connected'
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      status: 'ERROR', 
+      message: err.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Public status endpoint with database info
