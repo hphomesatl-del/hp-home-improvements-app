@@ -52,8 +52,42 @@ initDB(pool).catch(err => console.error('DB init failed:', err));
 app.locals.pool = pool;
 
 // Health check - MUST BE BEFORE OTHER ROUTES
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Test database connection
+    const result = await pool.query('SELECT NOW()');
+    res.json({ 
+      status: 'OK', 
+      database: 'connected',
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Health check error:', err);
+    res.status(500).json({ 
+      status: 'ERROR', 
+      message: err.message,
+      database: 'disconnected',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Debug endpoint - check database config
+app.get('/debug/db-status', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT version();');
+    res.json({
+      status: 'connected',
+      postgresVersion: result.rows[0].version,
+      hasDatabase: true
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'disconnected',
+      error: err.message,
+      hasDatabase: !!process.env.DATABASE_URL
+    });
+  }
 });
 
 // Test endpoint - simple hardcoded response
