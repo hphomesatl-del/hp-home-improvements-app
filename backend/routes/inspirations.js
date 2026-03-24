@@ -1,267 +1,167 @@
-const express = require('express');
-const { google } = require('googleapis');
-const path = require('path');
-const fs = require('fs');
-const sharp = require('sharp');
+/**
+ * Inspirations Gallery Routes
+ * Handles fetching inspiration images for customers
+ */
 
 module.exports = (pool) => {
+  const express = require('express');
   const router = express.Router();
 
-  // Load Google Drive credentials
-  let googleAuth;
-  const backendPath = path.join(__dirname, '..', 'hphomesatl-service-account.json');
-  const credentialsPath = fs.existsSync(backendPath) 
-    ? backendPath 
-    : (process.env.GOOGLE_APPLICATION_CREDENTIALS || path.join(__dirname, '../..', 'hphomesatl-service-account.json'));
-
-  if (fs.existsSync(credentialsPath)) {
-    const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'));
-    googleAuth = new google.auth.GoogleAuth({
-      keyFile: credentialsPath,
-      scopes: ['https://www.googleapis.com/auth/drive.readonly']
-    });
-  } else {
-    console.warn('⚠️ Service account file not found at:', credentialsPath);
-  }
-
-  const categoryFolderMap = {
-    'kitchens': 'Kitchens',
-    'deck': 'Decks',
-    'decks': 'Decks',
-    'bathroom': 'Bathrooms',
-    'bathrooms': 'Bathrooms',
-    'fireplace': 'Fireplaces',
-    'fireplaces': 'Fireplaces',
-    'basements': 'Basements',
-    'drywall': 'Drywall',
-    'beams': 'Beams',
-    'flooring': 'Flooring',
-    'new-builds': 'New builds',
-    'closets': 'Closets'
-  };
-
-  const imageCache = {};
-  const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
-
-  // GET /api/inspirations/thumbnails - Get first image for each category
-  router.get('/thumbnails', async (req, res) => {
+  // Get all inspirations, optionally filtered by category
+  router.get('/', async (req, res) => {
     try {
-      // Check cache
-      if (imageCache['__thumbnails'] && Date.now() - imageCache['__thumbnails'].timestamp < CACHE_TTL) {
-        return res.json(imageCache['__thumbnails'].data);
+      const { category } = req.query;
+      
+      let query = 'SELECT id, category, title, description, image_url, created_at FROM inspirations WHERE active = true ORDER BY category, created_at DESC';
+      const params = [];
+
+      if (category && category !== 'all') {
+        query = 'SELECT id, category, title, description, image_url, created_at FROM inspirations WHERE category = $1 AND active = true ORDER BY created_at DESC';
+        params.push(category);
       }
 
-      if (!googleAuth) {
-        return res.status(500).json({ error: 'Google Drive not configured' });
-      }
-
-      const drive = google.drive({ version: 'v3', auth: googleAuth });
-
-      // Find the Inspirations folder
-      const inspirationsFolderRes = await drive.files.list({
-        q: "name='Inspirations' and mimeType='application/vnd.google-apps.folder' and trashed=false",
-        spaces: 'drive',
-        fields: 'files(id, name)',
-        pageSize: 1
+      const result = await pool.query(query, params);
+      
+      res.json({
+        success: true,
+        count: result.rows.length,
+        inspirations: result.rows,
+        categories: ['Kitchens', 'Bathrooms', 'Decks', 'Exteriors', 'Basements', 'Additions']
       });
-
-      if (!inspirationsFolderRes.data.files || inspirationsFolderRes.data.files.length === 0) {
-        return res.json({});
-      }
-
-      const inspirationsFolderId = inspirationsFolderRes.data.files[0].id;
-      const baseUrl = process.env.API_BASE_URL || 'http://localhost:5000';
-      const thumbnails = {};
-
-      // Get unique folder names
-      const uniqueFolders = [...new Set(Object.values(categoryFolderMap))];
-
-      for (const folderName of uniqueFolders) {
-        try {
-          const categoryFolderRes = await drive.files.list({
-            q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and '${inspirationsFolderId}' in parents and trashed=false`,
-            spaces: 'drive',
-            fields: 'files(id, name)',
-            pageSize: 1
-          });
-
-          if (categoryFolderRes.data.files && categoryFolderRes.data.files.length > 0) {
-            const folderId = categoryFolderRes.data.files[0].id;
-            const imagesRes = await drive.files.list({
-              q: `'${folderId}' in parents and (mimeType='image/jpeg' or mimeType='image/png' or mimeType='image/gif' or mimeType='image/webp' or mimeType='image/heif' or mimeType='image/heic') and trashed=false`,
-              spaces: 'drive',
-              fields: 'files(id, name)',
-              pageSize: 1,
-              orderBy: 'createdTime'
-            });
-
-            if (imagesRes.data.files && imagesRes.data.files.length > 0) {
-              const file = imagesRes.data.files[0];
-              // Map back to slug(s)
-              for (const [slug, name] of Object.entries(categoryFolderMap)) {
-                if (name === folderName) {
-                  thumbnails[slug] = `${baseUrl}/api/inspirations/image/${file.id}`;
-                }
-              }
-            }
-          }
-        } catch (err) {
-          console.error(`Error fetching thumbnail for ${folderName}:`, err.message);
-        }
-      }
-
-      imageCache['__thumbnails'] = { data: thumbnails, timestamp: Date.now() };
-      res.json(thumbnails);
-    } catch (err) {
-      console.error('Error fetching thumbnails:', err);
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-  // GET /api/inspirations/:category
-  router.get('/:category', async (req, res) => {
-    try {
-      const { category } = req.params;
-      const folderName = categoryFolderMap[category];
-
-      if (!folderName) {
-        return res.status(400).json({ error: 'Invalid category' });
-      }
-
-      // Check cache
-      if (imageCache[category] && Date.now() - imageCache[category].timestamp < CACHE_TTL) {
-        return res.json(imageCache[category].images);
-      }
-
-      if (!googleAuth) {
-        return res.status(500).json({ error: 'Google Drive not configured' });
-      }
-
-      const drive = google.drive({ version: 'v3', auth: googleAuth });
-
-      // Find the Inspirations folder
-      const inspirationsFolderRes = await drive.files.list({
-        q: "name='Inspirations' and mimeType='application/vnd.google-apps.folder' and trashed=false",
-        spaces: 'drive',
-        fields: 'files(id, name)',
-        pageSize: 1
-      });
-
-      if (!inspirationsFolderRes.data.files || inspirationsFolderRes.data.files.length === 0) {
-        return res.json([]);
-      }
-
-      const inspirationsFolderId = inspirationsFolderRes.data.files[0].id;
-
-      // Find the category folder within Inspirations
-      const categoryFolderRes = await drive.files.list({
-        q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and '${inspirationsFolderId}' in parents and trashed=false`,
-        spaces: 'drive',
-        fields: 'files(id, name)',
-        pageSize: 1
-      });
-
-      if (!categoryFolderRes.data.files || categoryFolderRes.data.files.length === 0) {
-        return res.json([]);
-      }
-
-      const categoryFolderId = categoryFolderRes.data.files[0].id;
-
-      // Get images from category folder
-      const imagesRes = await drive.files.list({
-        q: `'${categoryFolderId}' in parents and (mimeType='image/jpeg' or mimeType='image/png' or mimeType='image/gif' or mimeType='image/webp' or mimeType='image/heif' or mimeType='image/heic') and trashed=false`,
-        spaces: 'drive',
-        fields: 'files(id, name, mimeType, createdTime)',
-        pageSize: 100,
-        orderBy: 'createdTime'
-      });
-
-      const images = (imagesRes.data.files || []).map(file => ({
-        id: file.id,
-        name: file.name,
-        url: `${process.env.API_BASE_URL || 'http://localhost:5000'}/api/inspirations/image/${file.id}`,
-        mimeType: file.mimeType
-      }));
-
-      // Cache the results
-      imageCache[category] = {
-        images,
-        timestamp: Date.now()
-      };
-
-      res.json(images);
     } catch (err) {
       console.error('Error fetching inspirations:', err);
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: 'Failed to fetch inspirations' });
     }
   });
 
-  // GET /api/inspirations/image/:fileId - Stream image from Google Drive
-  router.get('/image/:fileId', async (req, res) => {
+  // Get inspirations by category
+  router.get('/category/:category', async (req, res) => {
     try {
-      const { fileId } = req.params;
-
-      if (!googleAuth) {
-        return res.status(500).json({ error: 'Google Drive not configured' });
-      }
-
-      const drive = google.drive({ version: 'v3', auth: googleAuth });
-
-      // Get file metadata
-      const fileRes = await drive.files.get({
-        fileId: fileId,
-        fields: 'mimeType, name'
+      const { category } = req.params;
+      
+      const query = 'SELECT id, category, title, description, image_url, created_at FROM inspirations WHERE category = $1 AND active = true ORDER BY created_at DESC';
+      const result = await pool.query(query, [category]);
+      
+      res.json({
+        success: true,
+        category,
+        count: result.rows.length,
+        inspirations: result.rows
       });
-
-      // Stream the file
-      const file = await drive.files.get({
-        fileId: fileId,
-        alt: 'media'
-      }, { responseType: 'stream' });
-
-      const mimeType = fileRes.data.mimeType || 'image/jpeg';
-      const isHeic = mimeType === 'image/heif' || mimeType === 'image/heic' || 
-                     (fileRes.data.name && fileRes.data.name.toLowerCase().endsWith('.heic'));
-
-      if (isHeic) {
-        // Convert HEIC to JPEG for browser compatibility
-        res.setHeader('Cache-Control', 'public, max-age=3600');
-
-        const chunks = [];
-        file.data.on('data', (chunk) => chunks.push(chunk));
-        file.data.on('end', async () => {
-          try {
-            const buffer = Buffer.concat(chunks);
-            const jpegBuffer = await sharp(buffer).jpeg({ quality: 85 }).toBuffer();
-            res.setHeader('Content-Type', 'image/jpeg');
-            res.setHeader('Content-Disposition', `inline; filename="${fileRes.data.name.replace(/\.heic$/i, '.jpg')}"`);
-            res.end(jpegBuffer);
-          } catch (convErr) {
-            console.error('HEIC conversion failed, serving raw:', convErr.message);
-            // Fallback: serve the raw image (Safari and modern Chrome support HEIC)
-            res.setHeader('Content-Type', mimeType);
-            res.setHeader('Content-Disposition', `inline; filename="${fileRes.data.name}"`);
-            res.end(Buffer.concat(chunks));
-          }
-        });
-        file.data.on('error', (err) => {
-          console.error('Stream error:', err);
-          if (!res.headersSent) res.status(500).json({ error: 'Failed to stream image' });
-        });
-      } else {
-        res.setHeader('Content-Type', mimeType);
-        res.setHeader('Cache-Control', 'public, max-age=3600');
-        res.setHeader('Content-Disposition', `inline; filename="${fileRes.data.name}"`);
-
-        file.data.pipe(res);
-        file.data.on('error', (err) => {
-          console.error('Stream error:', err);
-          if (!res.headersSent) res.status(500).json({ error: 'Failed to stream image' });
-        });
-      }
     } catch (err) {
-      console.error('Error streaming image:', err);
-      res.status(500).json({ error: err.message });
+      console.error('Error fetching inspirations by category:', err);
+      res.status(500).json({ error: 'Failed to fetch inspirations' });
+    }
+  });
+
+  // Get single inspiration
+  router.get('/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const query = 'SELECT id, category, title, description, image_url, created_at FROM inspirations WHERE id = $1 AND active = true';
+      const result = await pool.query(query, [id]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Inspiration not found' });
+      }
+      
+      res.json({
+        success: true,
+        inspiration: result.rows[0]
+      });
+    } catch (err) {
+      console.error('Error fetching inspiration:', err);
+      res.status(500).json({ error: 'Failed to fetch inspiration' });
+    }
+  });
+
+  // Add new inspiration (admin only - would need auth)
+  router.post('/', async (req, res) => {
+    try {
+      const { category, title, description, image_url } = req.body;
+      
+      if (!category || !title || !image_url) {
+        return res.status(400).json({ error: 'Missing required fields: category, title, image_url' });
+      }
+
+      const query = `
+        INSERT INTO inspirations (id, category, title, description, image_url, active, created_at)
+        VALUES (gen_random_uuid(), $1, $2, $3, $4, true, NOW())
+        RETURNING *
+      `;
+      
+      const result = await pool.query(query, [category, title, description || '', image_url]);
+      
+      res.status(201).json({
+        success: true,
+        inspiration: result.rows[0]
+      });
+    } catch (err) {
+      console.error('Error adding inspiration:', err);
+      res.status(500).json({ error: 'Failed to add inspiration' });
+    }
+  });
+
+  // Update inspiration
+  router.put('/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { category, title, description, image_url, active } = req.body;
+
+      const query = `
+        UPDATE inspirations 
+        SET category = COALESCE($1, category),
+            title = COALESCE($2, title),
+            description = COALESCE($3, description),
+            image_url = COALESCE($4, image_url),
+            active = COALESCE($5, active)
+        WHERE id = $6
+        RETURNING *
+      `;
+      
+      const result = await pool.query(query, [category, title, description, image_url, active, id]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Inspiration not found' });
+      }
+      
+      res.json({
+        success: true,
+        inspiration: result.rows[0]
+      });
+    } catch (err) {
+      console.error('Error updating inspiration:', err);
+      res.status(500).json({ error: 'Failed to update inspiration' });
+    }
+  });
+
+  // Delete inspiration (soft delete - set active to false)
+  router.delete('/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const query = `
+        UPDATE inspirations 
+        SET active = false
+        WHERE id = $1
+        RETURNING *
+      `;
+      
+      const result = await pool.query(query, [id]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Inspiration not found' });
+      }
+      
+      res.json({
+        success: true,
+        message: 'Inspiration deleted',
+        inspiration: result.rows[0]
+      });
+    } catch (err) {
+      console.error('Error deleting inspiration:', err);
+      res.status(500).json({ error: 'Failed to delete inspiration' });
     }
   });
 
