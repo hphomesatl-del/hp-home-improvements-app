@@ -1,23 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
 function Inspirations() {
-  const [category, setCategory] = useState('kitchens');
+  const [category, setCategory] = useState('Kitchens');
   const [images, setImages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [thumbnails, setThumbnails] = useState({});
 
   const categories = [
-    { slug: 'kitchens', label: 'Kitchens' },
-    { slug: 'bathrooms', label: 'Bathrooms' },
-    { slug: 'basements', label: 'Basements' },
-    { slug: 'beams', label: 'Beams' },
-    { slug: 'closets', label: 'Closets' },
-    { slug: 'decks', label: 'Decks' },
-    { slug: 'drywall', label: 'Drywall' },
-    { slug: 'fireplaces', label: 'Fireplaces' },
-    { slug: 'flooring', label: 'Flooring' },
-    { slug: 'new-builds', label: 'New Builds' }
+    { slug: 'Kitchens', label: 'Kitchens' },
+    { slug: 'Bathrooms', label: 'Bathrooms' },
+    { slug: 'Basements', label: 'Basements' },
+    { slug: 'Decks', label: 'Decks' },
+    { slug: 'Exteriors', label: 'Exteriors' },
+    { slug: 'Additions', label: 'Additions' }
   ];
 
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -29,10 +25,10 @@ function Inspirations() {
       await Promise.all(
         categories.map(async (cat) => {
           try {
-            const res = await fetch(`${apiUrl}/api/inspirations/${cat.slug}`);
+            const res = await fetch(`${apiUrl}/api/inspirations/category/${cat.slug}`);
             const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-              thumbs[cat.slug] = data[0].url || data[0];
+            if (data.inspirations && data.inspirations.length > 0) {
+              thumbs[cat.slug] = data.inspirations[0].image_url || data.inspirations[0];
             }
           } catch (err) {
             console.error(`Error fetching thumbnail for ${cat.slug}:`, err);
@@ -48,9 +44,13 @@ function Inspirations() {
     setLoading(true);
     setCurrentIndex(0);
     try {
-      const res = await fetch(`${apiUrl}/api/inspirations/${cat}`);
+      const res = await fetch(`${apiUrl}/api/inspirations/category/${cat}`);
       const data = await res.json();
-      setImages(data || []);
+      if (data.inspirations && Array.isArray(data.inspirations)) {
+        setImages(data.inspirations);
+      } else {
+        setImages([]);
+      }
     } catch (err) {
       console.error('Error fetching images:', err);
       setImages([]);
@@ -119,8 +119,8 @@ function Inspirations() {
             
             <div className="carousel-image-wrapper">
               <img 
-                src={currentImage.url || currentImage} 
-                alt={`Inspiration ${currentIndex + 1}`}
+                src={currentImage.image_url || currentImage.url || currentImage} 
+                alt={currentImage.title || `Inspiration ${currentIndex + 1}`}
                 className="carousel-image"
               />
             </div>
@@ -130,7 +130,8 @@ function Inspirations() {
 
           <div className="carousel-info">
             <p>{currentIndex + 1} of {images.length}</p>
-            {currentImage.name && <p className="image-name">{currentImage.name}</p>}
+            {currentImage.title && <p className="image-name">{currentImage.title}</p>}
+            {currentImage.description && <p className="image-desc">{currentImage.description}</p>}
           </div>
 
           <div className="carousel-dots">
