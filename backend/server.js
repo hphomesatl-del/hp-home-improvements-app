@@ -73,6 +73,31 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Public status endpoint with database info
+app.get('/status', async (req, res) => {
+  try {
+    // Get database stats
+    const projectCount = await pool.query('SELECT COUNT(*) as count FROM projects');
+    const customerCount = await pool.query('SELECT COUNT(*) as count FROM customers');
+    const contractorCount = await pool.query('SELECT COUNT(*) as count FROM contractors');
+    
+    res.json({
+      status: 'OK',
+      environment: process.env.NODE_ENV || 'development',
+      timestamp: new Date().toISOString(),
+      database: {
+        projects: parseInt(projectCount.rows[0].count),
+        customers: parseInt(customerCount.rows[0].count),
+        contractors: parseInt(contractorCount.rows[0].count)
+      },
+      frontend: 'https://frontend-gold-ten-70.vercel.app',
+      version: '0.1.0'
+    });
+  } catch (err) {
+    res.status(500).json({ status: 'ERROR', message: err.message });
+  }
+});
+
 // Routes - with logging
 console.log('Loading routes...');
 app.use('/api/customers', require('./routes/customers')(pool));
