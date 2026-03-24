@@ -186,11 +186,12 @@ app.use((err, req, res, next) => {
 });
 
 // Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ HP Home Improvements API running on port ${PORT}`);
   console.log(`📊 Database: ${process.env.DB_NAME || 'hp_home_improvements'}`);
-  console.log(`🔗 http://localhost:${PORT}`);
+  console.log(`🔗 http://0.0.0.0:${PORT}`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 module.exports = { app, pool };
