@@ -73,10 +73,10 @@ module.exports = (pool) => {
       const validLogins = {
         '790Clover': { password: 'Rice', name: 'Carlton Rice', role: 'customer' },
         '2100Bishop': { password: 'Ruiz', name: 'Gerry & Sarah Ruiz', role: 'customer' },
-        'rachford': { password: 'Rachford', name: 'Matt & Meghan Rachford', role: 'customer' },
-        'martin': { password: 'Martin', name: 'Ron & Judy Martin', role: 'customer' },
-        'goethals': { password: 'Goethals', name: 'Darinda & Micheal Goethals', role: 'customer' },
-        'kelly': { password: 'Davis', name: 'Kelly Davis', role: 'customer' }
+        '2361Ewing': { password: 'Rachford', name: 'Matt & Meghan Rachford', role: 'customer' },
+        '6115Buckeye': { password: 'Martin', name: 'Ron & Judy Martin', role: 'customer' },
+        '1057Monticello': { password: 'Goethals', name: 'Darinda & Micheal Goethals', role: 'customer' },
+        '4680Winding': { password: 'Davis', name: 'Kelly Davis', role: 'customer' }
       };
 
       const validUser = validLogins[loginField];
