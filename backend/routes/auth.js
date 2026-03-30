@@ -71,6 +71,12 @@ module.exports = (pool) => {
 
       // HARDCODED logins for production (database optional)
       const validLogins = {
+        // Admins
+        'greg': { password: 'admin2421', name: 'Greg Hutzell', role: 'admin' },
+        'zachary': { password: 'admin2421', name: 'Zachary Hutzell', role: 'admin' },
+        'drake': { password: 'admin2421', name: 'Drake Hutzell', role: 'admin' },
+        'tyler': { password: 'admin2421', name: 'Tyler Hutzell', role: 'admin' },
+        // Customers
         '790Clover': { password: 'Rice', name: 'Carlton Rice', role: 'customer' },
         '2100Bishop': { password: 'Ruiz', name: 'Gerry & Sarah Ruiz', role: 'customer' },
         '2361Ewing': { password: 'Rachford', name: 'Matt & Meghan Rachford', role: 'customer' },
