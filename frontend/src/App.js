@@ -59,9 +59,6 @@ function App() {
             <nav className="nav">
               {user?.role === 'admin' && (
                 <>
-                  <Link to="/projects">Dashboard</Link>
-                  <Link to="/projects/new">New Project</Link>
-                  <Link to="/team">Team</Link>
                   <Link to="/admin">Owner Dashboard</Link>
                 </>
               )}
