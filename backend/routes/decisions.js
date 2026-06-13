@@ -32,7 +32,7 @@ module.exports = (pool) => {
       }
 
       // Customer: only their projects' decisions
-      const projectIds = await getCustomerProjectIds(pool, req.userId, req.userEmail);
+      const projectIds = await getCustomerProjectIds(pool, req.userId, req.userEmail, req.userProjectIds || []);
       if (projectIds.length === 0) return res.json([]);
 
       const result = await pool.query(

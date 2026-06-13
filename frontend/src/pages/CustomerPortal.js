@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import '../styles/CustomerPortal.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5001').replace(/\/api\/?$/, '').replace(/\/$/, '');
 
 function CustomerPortal() {
   const [projects, setProjects] = useState([]);
@@ -331,27 +331,36 @@ function TeamTab({ contractors }) {
 
 function InspirationsTab() {
   const categories = [
-    { key: 'kitchens', label: '🍳 Kitchens' },
-    { key: 'bathrooms', label: '🛁 Bathrooms' },
-    { key: 'decks', label: '🏡 Decks' },
-    { key: 'fireplaces', label: '🔥 Fireplaces' },
-    { key: 'basements', label: '🏠 Basements' },
-    { key: 'flooring', label: '🪵 Flooring' },
-    { key: 'closets', label: '👔 Closets' },
-    { key: 'beams', label: '🪵 Beams' },
-    { key: 'drywall', label: '🧱 Drywall' },
-    { key: 'new-builds', label: '🏗️ New Builds' },
+    { key: 'New Builds', label: '🏗️ New Builds' },
+    { key: 'Kitchens', label: '🍳 Kitchens' },
+    { key: 'Flooring', label: '🪵 Flooring' },
+    { key: 'Fireplaces', label: '🔥 Fireplaces' },
+    { key: 'Drywall', label: '🧱 Drywall' },
+    { key: 'Decks', label: '🏡 Decks' },
+    { key: 'Closets', label: '👔 Closets' },
+    { key: 'Beams', label: '🪵 Beams' },
+    { key: 'Bathrooms', label: '🛁 Bathrooms' },
+    { key: 'Basements', label: '🏠 Basements' },
   ];
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [images, setImages] = useState([]);
   const [loadingImages, setLoadingImages] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(24);
+
+  const assetUrl = (url) => {
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) return url;
+    return `${API_URL}${url.startsWith('/') ? url : `/${url}`}`;
+  };
 
   const loadCategory = (cat) => {
     setSelectedCategory(cat);
+    setImages([]);
+    setVisibleCount(24);
     setLoadingImages(true);
-    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/inspirations/${cat}`)
+    fetch(`${API_URL}/api/inspirations/list/${encodeURIComponent(cat)}`)
       .then(res => res.json())
       .then(data => {
         setImages(Array.isArray(data) ? data : []);
@@ -382,13 +391,28 @@ function InspirationsTab() {
           ) : images.length === 0 ? (
             <p className="no-images">No images in this category yet.</p>
           ) : (
+            <>
+            <div className="gallery-count">
+              Showing {Math.min(visibleCount, images.length)} of {images.length} photos
+            </div>
             <div className="gallery-grid">
-              {images.map(img => (
+              {images.slice(0, visibleCount).map((img, index) => (
                 <div key={img.id} className="gallery-item" onClick={() => setSelectedImage(img)} style={{ cursor: 'pointer' }}>
-                  <img src={img.url} alt={img.name} loading="lazy" />
+                  <img
+                    src={assetUrl(img.thumbnail_url || img.url)}
+                    alt={img.name}
+                    loading={index < 8 ? 'eager' : 'lazy'}
+                    decoding="async"
+                  />
                 </div>
               ))}
             </div>
+            {visibleCount < images.length && (
+              <button className="load-more-btn" onClick={() => setVisibleCount(count => count + 24)}>
+                Load 24 More Photos
+              </button>
+            )}
+            </>
           )}
         </div>
       )}
@@ -397,7 +421,7 @@ function InspirationsTab() {
         <div className="lightbox-overlay" onClick={() => setSelectedImage(null)}>
           <div className="lightbox-content" onClick={e => e.stopPropagation()}>
             <button className="lightbox-close" onClick={() => setSelectedImage(null)}>✕</button>
-            <img src={selectedImage.url} alt={selectedImage.name} />
+            <img src={assetUrl(selectedImage.url)} alt={selectedImage.name} />
             {selectedImage.name && <p className="lightbox-name">{selectedImage.name}</p>}
           </div>
         </div>

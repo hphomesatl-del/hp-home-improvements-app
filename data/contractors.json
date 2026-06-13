@@ -7,7 +7,11 @@
       "phone": "404-246-7062",
       "email": null,
       "company": "Espinal Carpentry Crew",
-      "crew": ["Carlos", "Cruz", "Francisco"],
+      "crew": [
+        "Carlos",
+        "Cruz",
+        "Francisco"
+      ],
       "calendar": "Fidel-Carpenter",
       "responsibilities": [
         "Demolition",
@@ -26,7 +30,9 @@
       "company": null,
       "crew": [],
       "calendar": "Jose-Painter",
-      "responsibilities": ["Paint"],
+      "responsibilities": [
+        "Paint"
+      ],
       "notes": "Quality finish work; critical for final appearance"
     },
     {
@@ -52,7 +58,9 @@
       "phone": "678-923-4838",
       "email": null,
       "company": "Amen Electric",
-      "crew": ["Edwin Sorzano"],
+      "crew": [
+        "Edwin Sorzano"
+      ],
       "calendar": "Axel-Electric",
       "responsibilities": [
         "Electrical Rough",
@@ -69,7 +77,9 @@
       "company": null,
       "crew": [],
       "calendar": "Andres-Tile",
-      "responsibilities": ["Tile Work (Backsplash)"],
+      "responsibilities": [
+        "Tile Work (Backsplash)"
+      ],
       "notes": "Specializes in backsplash and tile finishes; late-phase work"
     },
     {
@@ -81,7 +91,9 @@
       "company": null,
       "crew": [],
       "calendar": "Jorge-Drywall",
-      "responsibilities": ["Drywall"],
+      "responsibilities": [
+        "Drywall"
+      ],
       "notes": "Quality gatekeeper; surface preparation affects paint quality significantly"
     },
     {
@@ -93,8 +105,10 @@
       "company": "Fast Flooring & Carpeting",
       "crew": [],
       "calendar": "Luciano-Flooring",
-      "responsibilities": ["Flooring"],
-      "notes": "Late-phase work; must follow paint completion"
+      "responsibilities": [
+        "Flooring"
+      ],
+      "notes": "Floor subcontractor"
     },
     {
       "id": "teresa-design",
@@ -159,6 +173,54 @@
         "Punch Out & Cleanup oversight"
       ],
       "notes": "In-house PM; coordinates all trades; handles scheduling and materials"
+    },
+    {
+      "id": "eric-gutter",
+      "name": "Eric",
+      "trade": "Gutter",
+      "phone": "404-955-6146",
+      "email": null,
+      "company": null,
+      "crew": [],
+      "calendar": null,
+      "responsibilities": [],
+      "notes": "Added from memory roster"
+    },
+    {
+      "id": "raul-mason",
+      "name": "Raul",
+      "trade": "Mason",
+      "phone": "404-201-5681",
+      "email": null,
+      "company": null,
+      "crew": [],
+      "calendar": null,
+      "responsibilities": [],
+      "notes": "Added from memory roster"
+    },
+    {
+      "id": "temo-garage-doors",
+      "name": "Temo",
+      "trade": "Garage Doors",
+      "phone": "678-499-8465",
+      "email": null,
+      "company": null,
+      "crew": [],
+      "calendar": null,
+      "responsibilities": [],
+      "notes": "Added from memory roster"
+    },
+    {
+      "id": "tyler-hutzell-project-management",
+      "name": "Tyler Hutzell",
+      "trade": "Project Management",
+      "phone": "404-401-0041",
+      "email": null,
+      "company": null,
+      "crew": [],
+      "calendar": null,
+      "responsibilities": [],
+      "notes": "Added from memory roster"
     }
   ]
 }

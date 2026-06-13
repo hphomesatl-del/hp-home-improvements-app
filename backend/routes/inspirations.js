@@ -7,16 +7,50 @@ module.exports = (pool) => {
   const express = require('express');
   const router = express.Router();
 
+  const CATEGORIES = [
+    'New Builds',
+    'Kitchens',
+    'Flooring',
+    'Fireplaces',
+    'Drywall',
+    'Decks',
+    'Closets',
+    'Beams',
+    'Bathrooms',
+    'Basements'
+  ];
+
+  const normalizeCategory = (value = '') => {
+    const normalized = String(value).trim().toLowerCase().replace(/[-_]+/g, ' ');
+    return CATEGORIES.find(category => category.toLowerCase() === normalized) || value;
+  };
+
+  const inspirationSelect = `
+    SELECT
+      id,
+      category,
+      title,
+      description,
+      image_url,
+      CASE
+        WHEN image_url LIKE '/uploads/inspirations/%'
+        THEN REPLACE(image_url, '/uploads/inspirations/', '/uploads/inspirations/thumbs/')
+        ELSE image_url
+      END AS thumbnail_url,
+      created_at
+    FROM inspirations
+  `;
+
   // Get all inspirations, optionally filtered by category
   router.get('/', async (req, res) => {
     try {
-      const { category } = req.query;
+      const category = req.query.category ? normalizeCategory(req.query.category) : undefined;
       
-      let query = 'SELECT id, category, title, description, image_url, created_at FROM inspirations WHERE active = true ORDER BY category, created_at DESC';
+      let query = `${inspirationSelect} WHERE active = true ORDER BY category, created_at DESC`;
       const params = [];
 
       if (category && category !== 'all') {
-        query = 'SELECT id, category, title, description, image_url, created_at FROM inspirations WHERE category = $1 AND active = true ORDER BY created_at DESC';
+        query = `${inspirationSelect} WHERE category = $1 AND active = true ORDER BY created_at DESC`;
         params.push(category);
       }
 
@@ -26,7 +60,7 @@ module.exports = (pool) => {
         success: true,
         count: result.rows.length,
         inspirations: result.rows,
-        categories: ['Kitchens', 'Bathrooms', 'Decks', 'Exteriors', 'Basements', 'Additions']
+        categories: CATEGORIES
       });
     } catch (err) {
       console.error('Error fetching inspirations:', err);
@@ -37,9 +71,9 @@ module.exports = (pool) => {
   // Get inspirations by category
   router.get('/category/:category', async (req, res) => {
     try {
-      const { category } = req.params;
+      const category = normalizeCategory(req.params.category);
       
-      const query = 'SELECT id, category, title, description, image_url, created_at FROM inspirations WHERE category = $1 AND active = true ORDER BY created_at DESC';
+      const query = `${inspirationSelect} WHERE category = $1 AND active = true ORDER BY created_at DESC`;
       const result = await pool.query(query, [category]);
       
       res.json({
@@ -54,12 +88,42 @@ module.exports = (pool) => {
     }
   });
 
+  // Backward-compatible category endpoint used by the customer portal UI.
+  router.get('/list/:category', async (req, res) => {
+    try {
+      const category = normalizeCategory(req.params.category);
+      const result = await pool.query(
+        `SELECT
+           id,
+           category,
+           title as name,
+           description,
+           image_url as url,
+           image_url,
+           CASE
+             WHEN image_url LIKE '/uploads/inspirations/%'
+             THEN REPLACE(image_url, '/uploads/inspirations/', '/uploads/inspirations/thumbs/')
+             ELSE image_url
+           END AS thumbnail_url,
+           created_at
+         FROM inspirations
+         WHERE category = $1 AND active = true
+         ORDER BY created_at DESC`,
+        [category]
+      );
+      res.json(result.rows);
+    } catch (err) {
+      console.error('Error fetching inspiration list:', err);
+      res.status(500).json({ error: 'Failed to fetch inspiration list' });
+    }
+  });
+
   // Get single inspiration
   router.get('/:id', async (req, res) => {
     try {
       const { id } = req.params;
       
-      const query = 'SELECT id, category, title, description, image_url, created_at FROM inspirations WHERE id = $1 AND active = true';
+      const query = `${inspirationSelect} WHERE id = $1 AND active = true`;
       const result = await pool.query(query, [id]);
       
       if (result.rows.length === 0) {

@@ -12,6 +12,68 @@ module.exports = (pool) => {
 
   const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
 
+  const CUSTOMER_PASSWORD = 'hphomes';
+
+  const normalizeLogin = (value = '') => String(value).trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  const getCustomerLoginName = (customerName = '') => {
+    const parts = String(customerName).trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '';
+
+    // Some project records are named like "Watson Project"; customers should still use "Watson".
+    if (parts.length > 1 && normalizeLogin(parts[parts.length - 1]) === 'project') {
+      return parts[parts.length - 2];
+    }
+
+    return parts[parts.length - 1];
+  };
+
+  const findCustomerByLastName = async (loginField) => {
+    const normalizedLogin = normalizeLogin(loginField);
+    const projectResult = await pool.query(`
+      SELECT id, customer_name, customer_email, customer_id
+      FROM projects
+      ORDER BY created_at DESC
+    `);
+
+    const matchingProjects = projectResult.rows.filter(project => (
+      normalizeLogin(getCustomerLoginName(project.customer_name)) === normalizedLogin
+    ));
+
+    if (matchingProjects.length === 0) {
+      const customerResult = await pool.query(`
+        SELECT id, name, email
+        FROM customers
+        ORDER BY "createdAt" DESC
+      `);
+
+      const matchingCustomer = customerResult.rows.find(customer => (
+        normalizeLogin(getCustomerLoginName(customer.name)) === normalizedLogin
+      ));
+
+      if (!matchingCustomer) return null;
+
+      return {
+        id: uuidv4(),
+        email: matchingCustomer.email || `${normalizedLogin}@hphomeimprovements.local`,
+        name: matchingCustomer.name,
+        role: 'customer',
+        projectIds: [],
+        customerRecordId: matchingCustomer.id
+      };
+    }
+
+    const primaryProject = matchingProjects.find(project => project.customer_id) || matchingProjects[0];
+
+    return {
+      id: primaryProject.customer_id || uuidv4(),
+      email: primaryProject.customer_email || `${normalizedLogin}@hphomeimprovements.local`,
+      name: primaryProject.customer_name,
+      role: 'customer',
+      projectIds: matchingProjects.map(project => project.id)
+    };
+  };
+
   // POST register new user
   router.post('/register', async (req, res) => {
     try {
@@ -69,40 +131,57 @@ module.exports = (pool) => {
         return res.status(400).json({ error: 'Missing credentials' });
       }
 
-      // HARDCODED logins for production (database optional)
-      const validLogins = {
-        // Admins
+      const adminLogins = {
         'greg': { password: 'admin2421', name: 'Greg Hutzell', role: 'admin' },
         'zachary': { password: 'admin2421', name: 'Zachary Hutzell', role: 'admin' },
         'drake': { password: 'admin2421', name: 'Drake Hutzell', role: 'admin' },
-        'tyler': { password: 'admin2421', name: 'Tyler Hutzell', role: 'admin' },
-        // Customers
-        '790Clover': { password: 'Rice', name: 'Carlton Rice', role: 'customer' },
-        '2100Bishop': { password: 'Ruiz', name: 'Gerry & Sarah Ruiz', role: 'customer' },
-        '2361Ewing': { password: 'Rachford', name: 'Matt & Meghan Rachford', role: 'customer' },
-        '6115Buckeye': { password: 'Martin', name: 'Ron & Judy Martin', role: 'customer' },
-        '1057Monticello': { password: 'Goethals', name: 'Darinda & Micheal Goethals', role: 'customer' },
-        '4680Winding': { password: 'Davis', name: 'Kelly Davis', role: 'customer' }
+        'tyler': { password: 'admin2421', name: 'Tyler Hutzell', role: 'admin' }
       };
 
-      const validUser = validLogins[loginField];
-      
-      if (!validUser || validUser.password !== password) {
+      const adminUser = adminLogins[normalizeLogin(loginField)];
+
+      let validUser = null;
+
+      if (adminUser) {
+        if (adminUser.password !== password) {
+          return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        validUser = {
+          id: uuidv4(),
+          email: `${normalizeLogin(loginField)}@hphomeimprovements.com`,
+          name: adminUser.name,
+          role: adminUser.role,
+          projectIds: []
+        };
+      } else {
+        if (normalizeLogin(password) !== CUSTOMER_PASSWORD) {
+          return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        validUser = await findCustomerByLastName(loginField);
+      }
+
+      if (!validUser) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
-      // Generate token
-      const { v4: uuidv4 } = require('uuid');
       const token = jwt.sign(
-        { userId: uuidv4(), email: loginField + '@hphomeimprovements.com', role: validUser.role },
+        {
+          userId: validUser.id,
+          email: validUser.email,
+          role: validUser.role,
+          projectIds: validUser.projectIds || [],
+          customerRecordId: validUser.customerRecordId || null
+        },
         JWT_SECRET,
         { expiresIn: '7d' }
       );
 
       res.json({
         user: {
-          id: uuidv4(),
-          email: loginField + '@hphomeimprovements.com',
+          id: validUser.id,
+          email: validUser.email,
           name: validUser.name,
           role: validUser.role
         },

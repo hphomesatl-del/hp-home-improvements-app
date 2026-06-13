@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/CustomerPortal.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5001').replace(/\/api\/?$/, '').replace(/\/$/, '');
 
 function Login({ onLoginSuccess }) {
   const [isRegister, setIsRegister] = useState(false);
@@ -63,7 +63,7 @@ function Login({ onLoginSuccess }) {
         <p className="login-subtitle">
           {isRegister
             ? 'Sign up to track your home improvement project'
-            : 'Sign in to view your projects'}
+            : 'Customers: sign in with your last name and the HP Homes password'}
         </p>
 
         {error && <div className="error-message">{error}</div>}
@@ -83,12 +83,13 @@ function Login({ onLoginSuccess }) {
           )}
 
           <div className="form-group">
-            <label>Sign In</label>
+            <label>{isRegister ? 'Email' : 'Sign In'}</label>
             <input
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Username or Email"
+              placeholder={isRegister ? 'you@example.com' : 'Customer last name, e.g. Rice'}
+              autoCapitalize="words"
               required
             />
           </div>

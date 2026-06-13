@@ -34,8 +34,11 @@ function verifyProjectOwnership(pool) {
 
     try {
       const result = await pool.query(
-        'SELECT id FROM projects WHERE id = $1 AND (customer_id = $2 OR customer_email = $3)',
-        [projectId, req.userId, req.userEmail]
+        `SELECT id
+         FROM projects
+         WHERE id = $1
+           AND (customer_id = $2 OR customer_email = $3 OR id = ANY($4::uuid[]))`,
+        [projectId, req.userId, req.userEmail, req.userProjectIds || []]
       );
 
       if (result.rows.length === 0) {
@@ -53,10 +56,10 @@ function verifyProjectOwnership(pool) {
 /**
  * Returns all project IDs owned by the current customer.
  */
-async function getCustomerProjectIds(pool, userId, userEmail) {
+async function getCustomerProjectIds(pool, userId, userEmail, userProjectIds = []) {
   const result = await pool.query(
-    'SELECT id FROM projects WHERE customer_id = $1 OR customer_email = $2',
-    [userId, userEmail]
+    'SELECT id FROM projects WHERE customer_id = $1 OR customer_email = $2 OR id = ANY($3::uuid[])',
+    [userId, userEmail, userProjectIds]
   );
   return result.rows.map(r => r.id);
 }

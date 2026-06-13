@@ -20,7 +20,7 @@ module.exports = (pool) => {
       }
 
       // Customer: get contractors assigned to their project phases
-      const projectIds = await getCustomerProjectIds(pool, req.userId, req.userEmail);
+      const projectIds = await getCustomerProjectIds(pool, req.userId, req.userEmail, req.userProjectIds || []);
       if (projectIds.length === 0) return res.json([]);
 
       const result = await pool.query(
@@ -42,7 +42,7 @@ module.exports = (pool) => {
     try {
       if (req.userRole !== 'admin') {
         // Verify this contractor is assigned to one of the customer's projects
-        const projectIds = await getCustomerProjectIds(pool, req.userId, req.userEmail);
+        const projectIds = await getCustomerProjectIds(pool, req.userId, req.userEmail, req.userProjectIds || []);
         const check = await pool.query(
           `SELECT c.id FROM contractors c
            INNER JOIN phases ph ON ph.contractor_id = c.id

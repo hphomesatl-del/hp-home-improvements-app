@@ -15,7 +15,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Inspirations from './pages/Inspirations';
 import Vendors from './pages/Vendors';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5001').replace(/\/api\/?$/, '').replace(/\/$/, '');
 
 function App() {
   const [projects, setProjects] = useState([]);

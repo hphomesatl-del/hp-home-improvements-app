@@ -1,70 +1,93 @@
 require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const path = require('path');
 const { Pool } = require('pg');
-const rateLimit = require('express-rate-limit');
 
 const app = express();
 
-// CORS: Restrict to frontend domains only
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:3000', 'https://frontend-gold-ten-70.vercel.app'];
+const DEFAULT_ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'https://frontend-gold-ten-70.vercel.app'
+];
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
+  : DEFAULT_ALLOWED_ORIGINS;
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin(origin, callback) {
+    // Allow non-browser clients like curl/Postman and configured browser origins.
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked origin: ${origin}`));
+  },
   credentials: true
 }));
 
-// DISABLED: Rate limiting for auth endpoints
-// const authLimiter = rateLimit({...});
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
-// Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+function isLocalDatabaseUrl(databaseUrl) {
+  try {
+    const { hostname } = new URL(databaseUrl);
+    return ['localhost', '127.0.0.1', '::1'].includes(hostname);
+  } catch (_) {
+    return false;
+  }
+}
 
-// Database Connection
-const poolConfig = process.env.DATABASE_URL
-  ? {
+function shouldUseSsl(databaseUrl) {
+  if (!databaseUrl) return false;
+  if (databaseUrl.includes('sslmode=disable')) return false;
+  if (isLocalDatabaseUrl(databaseUrl)) return false;
+  return process.env.NODE_ENV === 'production' || databaseUrl.includes('sslmode=require');
+}
+
+function buildPoolConfig() {
+  if (process.env.DATABASE_URL) {
+    return {
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-    }
-  : {
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT || 5432,
-      database: process.env.DB_NAME || 'hp_home_improvements'
+      ssl: shouldUseSsl(process.env.DATABASE_URL) ? { rejectUnauthorized: false } : false
     };
-const pool = new Pool(poolConfig);
+  }
+
+  return {
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    port: Number(process.env.DB_PORT || 5432),
+    database: process.env.DB_NAME || 'hp_home_improvements'
+  };
+}
+
+const pool = new Pool(buildPoolConfig());
 
 pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
+  console.error('Unexpected database pool error:', err);
 });
 
-// Initialize database on startup
 const initDB = require('./db/init-db');
 initDB(pool).catch(err => console.error('DB init failed:', err));
 
-// Make pool available to routes
 app.locals.pool = pool;
 
-// Health check - MUST BE BEFORE OTHER ROUTES
 app.get('/api/health', async (req, res) => {
   try {
-    // Test database connection
-    const result = await pool.query('SELECT NOW()');
-    res.json({ 
-      status: 'OK', 
+    await pool.query('SELECT NOW()');
+    res.json({
+      status: 'OK',
       database: 'connected',
       timestamp: new Date().toISOString()
     });
   } catch (err) {
     console.error('Health check error:', err);
-    res.status(500).json({ 
-      status: 'ERROR', 
+    res.status(500).json({
+      status: 'ERROR',
       message: err.message,
       database: 'disconnected',
       timestamp: new Date().toISOString()
@@ -72,73 +95,67 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Debug endpoint - check database config
+app.get('/health', async (req, res) => {
+  try {
+    await pool.query('SELECT NOW()');
+    res.json({
+      status: 'OK',
+      database: 'connected',
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: err.message,
+      database: 'disconnected',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 app.get('/debug/db-status', async (req, res) => {
   try {
     const result = await pool.query('SELECT version();');
     res.json({
       status: 'connected',
       postgresVersion: result.rows[0].version,
-      hasDatabase: true
+      databaseUrlConfigured: Boolean(process.env.DATABASE_URL)
     });
   } catch (err) {
     res.status(500).json({
       status: 'disconnected',
       error: err.message,
-      hasDatabase: !!process.env.DATABASE_URL
+      databaseUrlConfigured: Boolean(process.env.DATABASE_URL)
     });
   }
 });
 
-// Test endpoint - simple hardcoded response
 app.get('/api/test', (req, res) => {
   res.json({
-    message: 'API is working!',
-    customers: [
-      { username: '790Clover', password: 'Rice123', name: 'Carlton Rice' },
-      { username: '2100Bishop', password: 'Ruiz123', name: 'Gerry & Sarah Ruiz' }
-    ],
+    message: 'HP Home Improvements API is working',
     loginUrl: '/api/auth/login',
-    status: 'production'
+    healthUrl: '/api/health',
+    status: 'ok'
   });
 });
 
-app.get('/health', async (req, res) => {
-  try {
-    // Test database connection
-    await pool.query('SELECT NOW()');
-    res.json({ 
-      status: 'OK', 
-      timestamp: new Date().toISOString(),
-      database: 'connected'
-    });
-  } catch (err) {
-    res.status(500).json({ 
-      status: 'ERROR', 
-      message: err.message,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
-
-// Public status endpoint with database info
 app.get('/status', async (req, res) => {
   try {
-    // Get database stats
-    const projectCount = await pool.query('SELECT COUNT(*) as count FROM projects');
-    const customerCount = await pool.query('SELECT COUNT(*) as count FROM customers');
-    const contractorCount = await pool.query('SELECT COUNT(*) as count FROM contractors');
-    
+    const [projectCount, customerCount, contractorCount] = await Promise.all([
+      pool.query('SELECT COUNT(*) as count FROM projects'),
+      pool.query('SELECT COUNT(*) as count FROM customers'),
+      pool.query('SELECT COUNT(*) as count FROM contractors')
+    ]);
+
     res.json({
       status: 'OK',
       environment: process.env.NODE_ENV || 'development',
       timestamp: new Date().toISOString(),
       database: {
-        projects: parseInt(projectCount.rows[0].count),
-        customers: parseInt(customerCount.rows[0].count),
-        contractors: parseInt(contractorCount.rows[0].count)
+        projects: parseInt(projectCount.rows[0].count, 10),
+        customers: parseInt(customerCount.rows[0].count, 10),
+        contractors: parseInt(contractorCount.rows[0].count, 10)
       },
-      frontend: 'https://frontend-gold-ten-70.vercel.app',
       version: '0.1.0'
     });
   } catch (err) {
@@ -146,51 +163,46 @@ app.get('/status', async (req, res) => {
   }
 });
 
-// Routes - with logging
-console.log('Loading routes...');
+console.log('Loading API routes...');
 app.use('/api/customers', require('./routes/customers')(pool));
-console.log('✅ Customers route loaded');
 app.use('/api/projects', require('./routes/projects')(pool));
-console.log('✅ Projects route loaded');
 app.use('/api/phases', require('./routes/phases')(pool));
-console.log('✅ Phases route loaded');
 app.use('/api/decisions', require('./routes/decisions')(pool));
-console.log('✅ Decisions route loaded');
 app.use('/api/contractors', require('./routes/contractors')(pool));
-console.log('✅ Contractors route loaded');
 app.use('/api/auth', require('./routes/auth')(pool));
-console.log('✅ Auth route loaded');
 app.use('/api/inspirations', require('./routes/inspirations')(pool));
 app.use('/api/projects', require('./routes/plans')(pool));
 app.use('/api/admin', require('./routes/admin')(pool));
 app.use('/api/projects', require('./routes/customerPhotos')(pool));
 app.use('/api/projects', require('./routes/customerProjectUploads')(pool));
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const uploadStaticOptions = {
+  maxAge: '30d',
+  immutable: true,
+  etag: true,
+  lastModified: true
+};
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), uploadStaticOptions));
 app.use('/uploads/customer-photos', express.static(path.join(__dirname, 'uploads', 'customer-photos')));
 app.use('/uploads/customer-photos/thumbs', express.static(path.join(__dirname, 'uploads', 'customer-photos', 'thumbs')));
 app.use('/uploads/project-pictures', express.static(path.join(__dirname, 'uploads', 'project-pictures')));
 app.use('/uploads/project-pictures/thumbs', express.static(path.join(__dirname, 'uploads', 'project-pictures', 'thumbs')));
 app.use('/uploads/project-documents', express.static(path.join(__dirname, 'uploads', 'project-documents')));
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
 });
 
-// Error handler
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ error: err.message || 'Internal Server Error' });
 });
 
-// Start Server
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ HP Home Improvements API running on port ${PORT}`);
-  console.log(`📊 Database: ${process.env.DB_NAME || 'hp_home_improvements'}`);
-  console.log(`🔗 http://0.0.0.0:${PORT}`);
+  console.log(`📊 Database: ${process.env.DB_NAME || (process.env.DATABASE_URL ? 'DATABASE_URL' : 'hp_home_improvements')}`);
   console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 

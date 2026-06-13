@@ -19,6 +19,8 @@ function authenticateToken(req, res, next) {
     req.userId = decoded.userId;
     req.userEmail = decoded.email;
     req.userRole = decoded.role || 'customer';
+    req.userProjectIds = Array.isArray(decoded.projectIds) ? decoded.projectIds : [];
+    req.customerRecordId = decoded.customerRecordId || null;
     next();
   } catch (err) {
     return res.status(403).json({ error: 'Invalid or expired token' });

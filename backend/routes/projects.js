@@ -63,10 +63,32 @@ module.exports = (pool) => {
               'No active phases'
             ) as current_phase
           FROM projects p 
-          WHERE p.customer_id = $1 OR p.customer_email = $2
+          WHERE p.customer_id = $1 OR p.customer_email = $2 OR p.id = ANY($3::uuid[])
           ORDER BY p.created_at DESC
-        `, [req.userId, req.userEmail]);
+        `, [req.userId, req.userEmail, req.userProjectIds || []]);
       }
+      if (req.userRole !== 'admin' && result.rows.length === 0 && req.customerRecordId) {
+        const customerProject = await pool.query(`
+          SELECT
+            CONCAT('customer-', id) as id,
+            name as customer_name,
+            email as customer_email,
+            phone as customer_phone,
+            address,
+            "startDate" as start_date,
+            "endDate" as end_date,
+            budget as estimated_budget,
+            status,
+            "projectName" as current_phase,
+            scope,
+            "createdAt" as created_at
+          FROM customers
+          WHERE id = $1
+        `, [req.customerRecordId]);
+
+        return res.json(customerProject.rows);
+      }
+
       res.json(result.rows);
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -78,13 +100,48 @@ module.exports = (pool) => {
     try {
       const projectId = req.params.id;
 
+      if (projectId.startsWith('customer-') && req.customerRecordId) {
+        const customerId = Number(projectId.replace('customer-', ''));
+        if (customerId !== Number(req.customerRecordId) && req.userRole !== 'admin') {
+          return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const customerProject = await pool.query(`
+          SELECT
+            CONCAT('customer-', id) as id,
+            name as customer_name,
+            email as customer_email,
+            phone as customer_phone,
+            address,
+            "startDate" as start_date,
+            "endDate" as end_date,
+            budget as estimated_budget,
+            status,
+            "projectName" as current_phase,
+            scope,
+            "createdAt" as created_at
+          FROM customers
+          WHERE id = $1
+        `, [customerId]);
+
+        if (customerProject.rows.length === 0) {
+          return res.status(404).json({ error: 'Project not found' });
+        }
+
+        return res.json({
+          ...customerProject.rows[0],
+          phases: [],
+          decisions: []
+        });
+      }
+
       let project;
       if (req.userRole === 'admin') {
         project = await pool.query('SELECT * FROM projects WHERE id = $1', [projectId]);
       } else {
         project = await pool.query(
-          'SELECT * FROM projects WHERE id = $1 AND (customer_id = $2 OR customer_email = $3)',
-          [projectId, req.userId, req.userEmail]
+          'SELECT * FROM projects WHERE id = $1 AND (customer_id = $2 OR customer_email = $3 OR id = ANY($4::uuid[]))',
+          [projectId, req.userId, req.userEmail, req.userProjectIds || []]
         );
       }
 
@@ -161,8 +218,8 @@ module.exports = (pool) => {
       // Verify ownership for non-admins
       if (req.userRole !== 'admin') {
         const check = await pool.query(
-          'SELECT id FROM projects WHERE id = $1 AND (customer_id = $2 OR customer_email = $3)',
-          [id, req.userId, req.userEmail]
+          'SELECT id FROM projects WHERE id = $1 AND (customer_id = $2 OR customer_email = $3 OR id = ANY($4::uuid[]))',
+          [id, req.userId, req.userEmail, req.userProjectIds || []]
         );
         if (check.rows.length === 0) {
           return res.status(403).json({ error: 'Not authorized to update this project' });

@@ -8,15 +8,25 @@ function Inspirations() {
   const [thumbnails, setThumbnails] = useState({});
 
   const categories = [
+    { slug: 'New Builds', label: 'New Builds' },
     { slug: 'Kitchens', label: 'Kitchens' },
-    { slug: 'Bathrooms', label: 'Bathrooms' },
-    { slug: 'Basements', label: 'Basements' },
+    { slug: 'Flooring', label: 'Flooring' },
+    { slug: 'Fireplaces', label: 'Fireplaces' },
+    { slug: 'Drywall', label: 'Drywall' },
     { slug: 'Decks', label: 'Decks' },
-    { slug: 'Exteriors', label: 'Exteriors' },
-    { slug: 'Additions', label: 'Additions' }
+    { slug: 'Closets', label: 'Closets' },
+    { slug: 'Beams', label: 'Beams' },
+    { slug: 'Bathrooms', label: 'Bathrooms' },
+    { slug: 'Basements', label: 'Basements' }
   ];
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiUrl = (process.env.REACT_APP_API_URL || 'http://localhost:5001').replace(/\/api\/?$/, '').replace(/\/$/, '');
+
+  const assetUrl = (url) => {
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) return url;
+    return `${apiUrl}${url.startsWith('/') ? url : `/${url}`}`;
+  };
 
   useEffect(() => {
     // Fetch first image from each category to use as real thumbnail
@@ -28,7 +38,7 @@ function Inspirations() {
             const res = await fetch(`${apiUrl}/api/inspirations/category/${cat.slug}`);
             const data = await res.json();
             if (data.inspirations && data.inspirations.length > 0) {
-              thumbs[cat.slug] = data.inspirations[0].image_url || data.inspirations[0];
+              thumbs[cat.slug] = assetUrl(data.inspirations[0].thumbnail_url || data.inspirations[0].image_url || data.inspirations[0]);
             }
           } catch (err) {
             console.error(`Error fetching thumbnail for ${cat.slug}:`, err);
@@ -119,7 +129,7 @@ function Inspirations() {
             
             <div className="carousel-image-wrapper">
               <img 
-                src={currentImage.image_url || currentImage.url || currentImage} 
+                src={assetUrl(currentImage.image_url || currentImage.url || currentImage)} 
                 alt={currentImage.title || `Inspiration ${currentIndex + 1}`}
                 className="carousel-image"
               />

@@ -38,3 +38,13 @@ Thumbs.db
 logs/
 *.log
 .vercel
+
+# Runtime/infra
+*.pid
+*.backup
+*.broken
+*.pre_*
+uploads/inspirations/
+
+# Environment
+frontend/.env.production
